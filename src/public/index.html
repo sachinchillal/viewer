@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+  <!-- Highlight.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- GitHub Markdown CSS for beautiful markdown styling -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    .markdown-body {
+      box-sizing: border-box;
+      min-width: 200px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 45px;
+      background-color: #0d1117;
+    }
+
+    @media (max-width: 767px) {
+      .markdown-body {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+  <div class="container m-4">
+    <a href="/" class="text-blue-500">
+      <h1 class="text-2xl font-bold">Viewer</h1>
+    </a>
+    <ol id="directories-list" class="list-decimal list-inside"></ol>
+    <div id="file-content" class="markdown-body mt-6"></div>
+  </div>
+
+  <script>
+    let directories = [];
+    let currentRootDirectory = '';
+
+    init();
+
+    function init() {
+      // Read path from URL on page load
+      const urlParams = new URLSearchParams(window.location.search);
+      const pathFromUrl = urlParams.get('path') || '';
+      currentRootDirectory = pathFromUrl;
+
+      getDirectories(currentRootDirectory);
+
+      // Set up event delegation for click handling
+      const directoriesList = document.getElementById('directories-list');
+      directoriesList.addEventListener('click', (e) => {
+        if (e.target.tagName === 'LI' && e.target.dataset.directory) {
+          handleDirectoryClick(e.target.dataset.directory);
+        }
+      });
+
+      // Handle browser back/forward buttons
+      window.addEventListener('popstate', (e) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pathFromUrl = urlParams.get('path') || '';
+        currentRootDirectory = pathFromUrl;
+        getDirectories(currentRootDirectory);
+      });
+    }
+
+    function updateUrl(path) {
+      const url = new URL(window.location);
+      if (path) {
+        url.searchParams.set('path', path);
+      } else {
+        url.searchParams.delete('path');
+      }
+      // Update URL without reloading the page
+      window.history.pushState({ path }, '', url);
+    }
+
+    function getDirectories(root = '') {
+      const url = root ? `/api/directories?root=${encodeURIComponent(root)}` : '/api/directories';
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          // const directories = root ? ['..', ...data] : data;
+          const directories = ['..', ...data.list];
+          renderDirectories(directories);
+          if (data.fileContent) {
+            renderFileContent(data.fileContent);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching directories:', error);
+        });
+    }
+    function renderDirectories(directories) {
+      const directoriesList = document.getElementById('directories-list');
+      directoriesList.innerHTML = directories.map(directory => {
+        const isParent = directory === '..';
+        const displayName = isParent ? '.. (go back)' : directory;
+        // Escape HTML for data attribute
+        const escapedDirectory = directory.replace(/"/g, '&quot;');
+        return `<li class="cursor-pointer hover:text-blue-400 hover:underline py-1" data-directory="${escapedDirectory}">${displayName}</li>`;
+      }).join('');
+    }
+    function handleDirectoryClick(directory) {
+      console.log('handleDirectoryClick', directory);
+      if (directory === '..') {
+        // Go back to parent directory
+        if (currentRootDirectory === '') {
+          // At root, navigate to parent directory
+          currentRootDirectory = '..';
+        } else {
+          // Remove the last path segment or add another '..'
+          const pathParts = currentRootDirectory.split('/').filter(p => p);
+          console.log('pathParts', pathParts);
+          if (pathParts.length > 0 && pathParts[pathParts.length - 1] !== '..') {
+            // Remove the last path segment if it's not '..'
+            pathParts.pop();
+            currentRootDirectory = pathParts.length > 0 ? pathParts.join('/') : '';
+          } else {
+            // Add another '..' to go further up
+            currentRootDirectory = currentRootDirectory ? `${currentRootDirectory}/..` : '..';
+          }
+        }
+      } else {
+        // Navigate into the selected directory
+        currentRootDirectory = currentRootDirectory
+          ? `${currentRootDirectory}/${directory}`
+          : directory;
+      }
+      // Update URL with new path
+      updateUrl(currentRootDirectory);
+      getDirectories(currentRootDirectory);
+    }
+    function renderDirectory(directory) {
+      const directoryItem = document.createElement('div');
+      directoryItem.classList.add('directory-item');
+      directoryItem.innerHTML = `<a href="/${directory}">${directory}</a>`;
+      return directoryItem;
+    }
+    function renderFileContent(fileContent) {
+      const fileContentElement = document.getElementById('file-content');
+      if (!fileContent) {
+        fileContentElement.innerHTML = '';
+        return;
+      }
+
+      // Configure marked with custom renderer for code blocks
+      const renderer = new marked.Renderer();
+      
+      // Custom code block renderer to ensure language classes are set
+      // marked already escapes the code, so we can use it directly
+      renderer.code = function(code, language) {
+        const lang = language || '';
+        const langClass = lang ? ` class="language-${lang}"` : '';
+        // marked already escapes HTML in code, so we can use it directly
+        return `<pre><code${langClass}>${code}</code></pre>`;
+      };
+
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        headerIds: true,
+        mangle: false,
+        renderer: renderer
+      });
+
+      // Parse markdown to HTML
+      const html = marked.parse(fileContent);
+
+      // Set the HTML content
+      fileContentElement.innerHTML = html;
+
+      // Highlight all code blocks using highlight.js
+      // Use setTimeout to ensure DOM is ready
+      setTimeout(() => {
+        if (typeof hljs !== 'undefined' && hljs.highlightElement) {
+          fileContentElement.querySelectorAll('pre code').forEach((block) => {
+            try {
+              // Remove any existing highlight classes to avoid conflicts
+              block.classList.remove('hljs');
+              // Highlight the code block
+              hljs.highlightElement(block);
+            } catch (err) {
+              console.error('Error highlighting code block:', err);
+            }
+          });
+        } else {
+          console.error('Highlight.js is not loaded');
+        }
+      }, 0);
+    }
+  </script>
+
+
+</body>
+
+</html>
