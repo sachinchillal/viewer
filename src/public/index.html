@@ -6,21 +6,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viewer</title>
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
-  <!-- Highlight.js for syntax highlighting -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <!-- Highlight.js for syntax highlighting (dark + light) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+    id="hljs-dark" media="all">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+    id="hljs-light" media="none">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <!-- GitHub Markdown CSS for beautiful markdown styling -->
+  <!-- GitHub Markdown CSS (dark + light) -->
   <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css">
+    href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-dark.min.css"
+    id="markdown-dark" media="all">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css"
+    id="markdown-light" media="none">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script>
+    tailwind.config = {
+      // Enable class-based dark mode
+      darkMode: 'class'
+    }
+  </script>
   <style>
+    /* Ensure html/body background follows theme (Tailwind class applies on html) */
+    html {
+      background-color: #fff;
+      color: #000;
+    }
+
+    html.dark {
+      background-color: #111827;
+      color: #e5e7eb;
+    }
+
+    body {
+      background-color: inherit;
+      color: inherit;
+    }
+
     .markdown-body {
       box-sizing: border-box;
       min-width: 200px;
       max-width: 980px;
       margin: 0 auto;
       padding: 45px;
+      background-color: #fff;
+    }
+
+    html.dark .markdown-body {
       background-color: #0d1117;
+    }
+
+    .markdown-body ol,
+    .markdown-body ul {
+      list-style: auto;
     }
 
     @media (max-width: 767px) {
@@ -28,23 +66,133 @@
         padding: 15px;
       }
     }
+
+    @media print {
+
+      /* @media screen { */
+
+      ol,
+      ul {
+        line-height: 1.2;
+      }
+
+      .no-print {
+        display: none;
+        /* Hide elements in print */
+      }
+
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        line-height: 1 !important;
+      }
+
+      .markdown-body {
+        background-color: #fff !important;
+        color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .markdown-body a {
+        color: #0550ae !important;
+      }
+
+      .markdown-body pre,
+      .markdown-body code,
+      .markdown-body .hljs {
+        border: 1px solid #e1e4e8;
+      }
+
+      pre,
+      code {
+        color: #000 !important;
+        background: transparent !important;
+        border: none !important;
+      }
+
+      .container a,
+      .container h1 {
+        color: #000 !important;
+      }
+
+      #directories-list li {
+        color: #000 !important;
+      }
+
+      p,
+      hr,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 0 !important;
+      }
+    }
   </style>
 </head>
 
-<body class="bg-gray-900 text-white">
+<body>
   <div class="container m-4">
-    <a href="/" class="text-blue-500">
-      <h1 class="text-2xl font-bold">Viewer</h1>
-    </a>
-    <ol id="directories-list" class="list-decimal list-inside"></ol>
+    <div class="no-print flex justify-between items-center">
+      <a href="/" class="text-blue-600 dark:text-blue-400">
+        <h1 class="text-2xl font-bold">Viewer</h1>
+      </a>
+      <div class="flex gap-2 mt-2">
+        <button type="button" id="btn-dark" class="px-2 py-1 rounded text-sm border transition-colors">Dark</button>
+        <button type="button" id="btn-light" class="px-2 py-1 rounded text-sm border transition-colors">Light</button>
+      </div>
+    </div>
+    <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
     <div id="file-content" class="markdown-body mt-6"></div>
   </div>
 
   <script>
+    const THEME_KEY = 'viewer-theme';
+    const THEME_DARK = 'dark';
+    const THEME_LIGHT = 'light';
+    const htmlElement = document.documentElement;
+
     let directories = [];
     let currentRootDirectory = '';
 
     init();
+    initTheme();
+
+    function initTheme() {
+      // On page load, resolve theme from localStorage or system preference
+      const saved = localStorage.getItem(THEME_KEY);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialMode = saved === THEME_DARK || saved === THEME_LIGHT
+        ? saved
+        : (prefersDark ? THEME_DARK : THEME_LIGHT);
+      applyTheme(initialMode);
+
+      document.getElementById('btn-dark').addEventListener('click', () => applyTheme(THEME_DARK));
+      document.getElementById('btn-light').addEventListener('click', () => applyTheme(THEME_LIGHT));
+    }
+    function applyTheme(mode) {
+      // Toggle the 'dark' class on the <html> element
+      if (mode === THEME_DARK) {
+        htmlElement.classList.add(THEME_DARK);
+        htmlElement.classList.remove(THEME_LIGHT);
+        localStorage.setItem(THEME_KEY, THEME_DARK);
+      } else {
+        htmlElement.classList.remove(THEME_DARK);
+        htmlElement.classList.add(THEME_LIGHT);
+        localStorage.setItem(THEME_KEY, THEME_LIGHT);
+      }
+
+      // Toggle stylesheets (highlight.js + markdown) to match theme
+      const isDark = mode === THEME_DARK;
+      document.getElementById('hljs-dark').media = isDark ? 'all' : 'none';
+      document.getElementById('hljs-light').media = isDark ? 'none' : 'all';
+      document.getElementById('markdown-dark').media = isDark ? 'all' : 'none';
+      document.getElementById('markdown-light').media = isDark ? 'none' : 'all';
+    }
+
 
     function init() {
       // Read path from URL on page load
@@ -106,7 +254,7 @@
         const displayName = isParent ? '.. (go back)' : directory;
         // Escape HTML for data attribute
         const escapedDirectory = directory.replace(/"/g, '&quot;');
-        return `<li class="cursor-pointer hover:text-blue-400 hover:underline py-1" data-directory="${escapedDirectory}">${displayName}</li>`;
+        return `<li class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 text-inherit" data-directory="${escapedDirectory}">${displayName}</li>`;
       }).join('');
     }
     function handleDirectoryClick(directory) {
@@ -154,10 +302,10 @@
 
       // Configure marked with custom renderer for code blocks
       const renderer = new marked.Renderer();
-      
+
       // Custom code block renderer to ensure language classes are set
       // marked already escapes the code, so we can use it directly
-      renderer.code = function(code, language) {
+      renderer.code = function (code, language) {
         const lang = language || '';
         const langClass = lang ? ` class="language-${lang}"` : '';
         // marked already escapes HTML in code, so we can use it directly
@@ -198,7 +346,6 @@
       }, 0);
     }
   </script>
-
 
 </body>
 
