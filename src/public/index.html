@@ -135,7 +135,7 @@
 </head>
 
 <body>
-  <div class="container m-4">
+  <div class="container mx-auto m-4">
     <div class="no-print flex justify-between items-center">
       <a href="/" class="text-blue-600 dark:text-blue-400">
         <h1 class="text-2xl font-bold">Viewer</h1>
@@ -146,6 +146,48 @@
       </div>
     </div>
     <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
+    <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <label for="voice-select" class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Voice</label>
+        <select id="voice-select"
+          class="flex-1 min-w-[160px] max-w-xs px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-shadow">
+          <option value="">Select voice…</option>
+          <option value="default">Default</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <label
+          class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-700 dark:text-gray-300 shrink-0">
+          <input type="checkbox" id="skip-code-blocks"
+            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+          <span>Skip code blocks</span>
+        </label>
+        <button type="button" id="btn-play" title="Play"
+          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5v14l11-7L8 5z" />
+          </svg>
+        </button>
+        <button type="button" id="btn-pause" title="Pause"
+          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        </button>
+        <button type="button" id="btn-resume" title="Resume"
+          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+          </svg>
+        </button>
+        <button type="button" id="btn-stop" title="Stop"
+          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6h12v12H6z" />
+          </svg>
+        </button>
+      </div>
+    </div>
     <div id="file-content" class="markdown-body mt-6"></div>
   </div>
 
@@ -154,12 +196,50 @@
     const THEME_DARK = 'dark';
     const THEME_LIGHT = 'light';
     const htmlElement = document.documentElement;
+    // Voice
+    const VOICE_STORAGE_KEY = 'viewer-voice';
+    const SKIP_CODE_BLOCKS_KEY = 'viewer-skip-code-blocks';
+    const voiceSelect = document.getElementById('voice-select');
+    const btnPlay = document.getElementById('btn-play');
+    const btnPause = document.getElementById('btn-pause');
+    const btnResume = document.getElementById('btn-resume');
+    const btnStop = document.getElementById('btn-stop');
+    const skipCodeBlocksCheckbox = document.getElementById('skip-code-blocks');
+    const codeblockAlternativeText = "See the code block for more details.";
+    let voiceControllerContent = "";
 
     let directories = [];
     let currentRootDirectory = '';
 
     init();
     initTheme();
+    initVoiceController();
+
+
+    function init() {
+      // Read path from URL on page load
+      const urlParams = new URLSearchParams(window.location.search);
+      const pathFromUrl = urlParams.get('path') || '';
+      currentRootDirectory = pathFromUrl;
+
+      getDirectories(currentRootDirectory);
+
+      // Set up event delegation for click handling
+      const directoriesList = document.getElementById('directories-list');
+      directoriesList.addEventListener('click', (e) => {
+        if (e.target.tagName === 'LI' && e.target.dataset.directory) {
+          handleDirectoryClick(e.target.dataset.directory);
+        }
+      });
+
+      // Handle browser back/forward buttons
+      window.addEventListener('popstate', (e) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pathFromUrl = urlParams.get('path') || '';
+        currentRootDirectory = pathFromUrl;
+        getDirectories(currentRootDirectory);
+      });
+    }
 
     function initTheme() {
       // On page load, resolve theme from localStorage or system preference
@@ -194,29 +274,85 @@
     }
 
 
-    function init() {
-      // Read path from URL on page load
-      const urlParams = new URLSearchParams(window.location.search);
-      const pathFromUrl = urlParams.get('path') || '';
-      currentRootDirectory = pathFromUrl;
+    function initVoiceController() {
 
-      getDirectories(currentRootDirectory);
+      function populateVoices() {
+        const voices = speechSynthesis.getVoices();
+        const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+        voiceSelect.innerHTML = '<option value="">Select voice…</option>' +
+          englishVoices.map(v => `<option value="${escapeHtmlAttr(v.name)}">${escapeHtmlAttr(v.name)} (${escapeHtmlAttr(v.lang)})</option>`).join('');
 
-      // Set up event delegation for click handling
-      const directoriesList = document.getElementById('directories-list');
-      directoriesList.addEventListener('click', (e) => {
-        if (e.target.tagName === 'LI' && e.target.dataset.directory) {
-          handleDirectoryClick(e.target.dataset.directory);
+        const saved = localStorage.getItem(VOICE_STORAGE_KEY);
+        if (saved && [...voiceSelect.options].some(o => o.value === saved)) {
+          voiceSelect.value = saved;
         }
+      }
+
+      function escapeHtmlAttr(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      if (speechSynthesis.getVoices().length) {
+        populateVoices();
+      } else {
+        speechSynthesis.addEventListener('voiceschanged', populateVoices);
+      }
+
+      voiceSelect.addEventListener('change', () => {
+        const value = voiceSelect.value;
+        if (value) localStorage.setItem(VOICE_STORAGE_KEY, value);
       });
 
-      // Handle browser back/forward buttons
-      window.addEventListener('popstate', (e) => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pathFromUrl = urlParams.get('path') || '';
-        currentRootDirectory = pathFromUrl;
-        getDirectories(currentRootDirectory);
+      const savedSkipCode = localStorage.getItem(SKIP_CODE_BLOCKS_KEY);
+      if (skipCodeBlocksCheckbox) {
+        skipCodeBlocksCheckbox.checked = savedSkipCode === 'true';
+        skipCodeBlocksCheckbox.addEventListener('change', () => {
+          localStorage.setItem(SKIP_CODE_BLOCKS_KEY, String(skipCodeBlocksCheckbox.checked));
+        });
+      }
+
+      btnPlay.addEventListener('click', () => {
+        const text = getSpeakableContent().trim();
+        if (!text) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const voices = speechSynthesis.getVoices();
+        const chosen = voiceSelect.value && voices.find(v => v.name === voiceSelect.value);
+        if (chosen) u.voice = chosen;
+        u.lang = 'en';
+        speechSynthesis.speak(u);
       });
+
+      btnPause.addEventListener('click', () => {
+        if (speechSynthesis.speaking) speechSynthesis.pause();
+      });
+
+      btnResume.addEventListener('click', () => {
+        // if (speechSynthesis.paused) speechSynthesis.resume();
+        speechSynthesis.resume();
+      });
+
+      btnStop.addEventListener('click', () => {
+        speechSynthesis.cancel();
+      });
+    }
+
+    function getSpeakableContent() {
+      const el = document.getElementById('file-content');
+      if (!el) return '';
+      if (skipCodeBlocksCheckbox && skipCodeBlocksCheckbox.checked) {
+        const clone = el.cloneNode(true);
+        // clone.querySelectorAll('pre').forEach((pre) => pre.remove());
+        clone.querySelectorAll('pre').forEach((pre) => {
+          pre.innerText = codeblockAlternativeText;
+        });
+        return clone.innerText || '';
+      }
+      return el.innerText || '';
     }
 
     function updateUrl(path) {
@@ -297,6 +433,7 @@
       const fileContentElement = document.getElementById('file-content');
       if (!fileContent) {
         fileContentElement.innerHTML = '';
+        voiceControllerContent = '';
         return;
       }
 
@@ -325,6 +462,7 @@
 
       // Set the HTML content
       fileContentElement.innerHTML = html;
+      voiceControllerContent = fileContentElement.innerText || '';
 
       // Highlight all code blocks using highlight.js
       // Use setTimeout to ensure DOM is ready
