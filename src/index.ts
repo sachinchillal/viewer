@@ -34,7 +34,7 @@ app.get('/api/directories', (req: Request, res: Response) => {
   } else {
     // Resolve the path to handle parent directory navigation (.., ../.., etc.)
     const resolvedPath = path.resolve(__dirname, root);
-    if (root.endsWith('.md')) {
+    if (root.endsWith('.md') || root.endsWith('.java')) {
       // send the markdown file content
       fileContent = fs.readFileSync(resolvedPath, 'utf8');
     } else {

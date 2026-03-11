@@ -67,6 +67,56 @@
       }
     }
 
+    .toc-sidebar {
+      position: sticky;
+      top: 1rem;
+      max-height: calc(100vh - 2rem);
+      overflow-y: auto;
+    }
+
+    .toc-sidebar a {
+      display: block;
+      padding: 0.25rem 0;
+      font-size: 0.875rem;
+      color: inherit;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      padding-left: 0.5rem;
+      margin-left: 0;
+    }
+
+    .toc-sidebar a:hover {
+      color: #2563eb;
+    }
+
+    html.dark .toc-sidebar a:hover {
+      color: #60a5fa;
+    }
+
+    .toc-sidebar .toc-h2 {
+      margin-left: 0;
+    }
+
+    .toc-sidebar .toc-h3 {
+      margin-left: 0.75rem;
+    }
+
+    .toc-sidebar .toc-h4 {
+      margin-left: 1.5rem;
+    }
+
+    .toc-sidebar .toc-h5 {
+      margin-left: 2.25rem;
+    }
+
+    .toc-sidebar .toc-h6 {
+      margin-left: 3rem;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     @media print {
 
       /* @media screen { */
@@ -76,11 +126,13 @@
         line-height: 1.2;
       }
 
-      .no-print {
-        display: none;
+      .no-print,
+      #toc-sidebar {
+        display: none !important;
         /* Hide elements in print */
       }
 
+      html,
       body {
         background: #fff !important;
         color: #000 !important;
@@ -136,59 +188,70 @@
 
 <body>
   <div class="container mx-auto m-4">
-    <div class="no-print flex justify-between items-center">
-      <a href="/" class="text-blue-600 dark:text-blue-400">
-        <h1 class="text-2xl font-bold">Viewer</h1>
-      </a>
-      <div class="flex gap-2 mt-2">
-        <button type="button" id="btn-dark" class="px-2 py-1 rounded text-sm border transition-colors">Dark</button>
-        <button type="button" id="btn-light" class="px-2 py-1 rounded text-sm border transition-colors">Light</button>
-      </div>
+    <div class="flex gap-6">
+      <aside id="toc-sidebar" class="toc-sidebar w-48 shrink-0 no-print hidden"></aside>
+      <main class="flex-1 min-w-0">
+        <div class="no-print flex justify-between items-center">
+          <a href="/" class="text-blue-600 dark:text-blue-400">
+            <h1 class="text-2xl font-bold">Viewer</h1>
+          </a>
+          <div class="flex gap-2 mt-2">
+            <input type="checkbox" id="is-two-column-print" class="px-2 py-1 rounded text-sm border transition-colors"
+              placeholder="Is Two Column Print">
+            <label for="is-two-column-print" class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Is
+              Two Column Print</label>
+            <button type="button" id="btn-dark" class="px-2 py-1 rounded text-sm border transition-colors">Dark</button>
+            <button type="button" id="btn-light"
+              class="px-2 py-1 rounded text-sm border transition-colors">Light</button>
+          </div>
+        </div>
+        <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
+        <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <label for="voice-select"
+              class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Voice</label>
+            <select id="voice-select"
+              class="flex-1 min-w-[160px] max-w-xs px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-shadow">
+              <option value="">Select voice…</option>
+              <option value="default">Default</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <label
+              class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-700 dark:text-gray-300 shrink-0">
+              <input type="checkbox" id="skip-code-blocks"
+                class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+              <span>Skip code blocks</span>
+            </label>
+            <button type="button" id="btn-play" title="Play"
+              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5v14l11-7L8 5z" />
+              </svg>
+            </button>
+            <button type="button" id="btn-pause" title="Pause"
+              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
+            </button>
+            <button type="button" id="btn-resume" title="Resume"
+              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+              </svg>
+            </button>
+            <button type="button" id="btn-stop" title="Stop"
+              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6h12v12H6z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="file-content" class="markdown-body mt-6"></div>
+      </main>
     </div>
-    <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
-    <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-2 min-w-0 flex-1">
-        <label for="voice-select" class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Voice</label>
-        <select id="voice-select"
-          class="flex-1 min-w-[160px] max-w-xs px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-shadow">
-          <option value="">Select voice…</option>
-          <option value="default">Default</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <label
-          class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-700 dark:text-gray-300 shrink-0">
-          <input type="checkbox" id="skip-code-blocks"
-            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
-          <span>Skip code blocks</span>
-        </label>
-        <button type="button" id="btn-play" title="Play"
-          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 5v14l11-7L8 5z" />
-          </svg>
-        </button>
-        <button type="button" id="btn-pause" title="Pause"
-          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-          </svg>
-        </button>
-        <button type="button" id="btn-resume" title="Resume"
-          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
-          </svg>
-        </button>
-        <button type="button" id="btn-stop" title="Stop"
-          class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 6h12v12H6z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div id="file-content" class="markdown-body mt-6"></div>
   </div>
 
   <script>
@@ -356,14 +419,13 @@
     }
 
     function updateUrl(path) {
-      const url = new URL(window.location);
+      // Build URL with readable path: encode only &, =, % so slashes stay as /
+      let newUrl = window.location.origin + window.location.pathname;
       if (path) {
-        url.searchParams.set('path', path);
-      } else {
-        url.searchParams.delete('path');
+        const safePath = path.replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
+        newUrl += '?path=' + safePath;
       }
-      // Update URL without reloading the page
-      window.history.pushState({ path }, '', url);
+      window.history.pushState({ path }, '', newUrl);
     }
 
     function getDirectories(root = '') {
@@ -376,7 +438,10 @@
           const directories = ['..', ...data.list];
           renderDirectories(directories);
           if (data.fileContent) {
-            renderFileContent(data.fileContent);
+            renderFileContent(data.fileContent, url);
+          } else {
+            document.getElementById('file-content').innerHTML = '';
+            buildTableOfContents(null);
           }
         })
         .catch(error => {
@@ -429,7 +494,52 @@
       directoryItem.innerHTML = `<a href="/${directory}">${directory}</a>`;
       return directoryItem;
     }
-    function renderFileContent(fileContent) {
+
+    function buildTableOfContents(contentEl) {
+      const tocSidebar = document.getElementById('toc-sidebar');
+      if (!tocSidebar) return;
+      const headings = contentEl ? contentEl.querySelectorAll('h1, h2, h3, h4, h5, h6') : [];
+      if (headings.length === 0) {
+        tocSidebar.innerHTML = '';
+        tocSidebar.classList.add('hidden');
+        return;
+      }
+      const nav = document.createElement('nav');
+      nav.setAttribute('aria-label', 'Table of contents');
+      headings.forEach((h) => {
+        const id = h.id || slugify(h.textContent);
+        if (!h.id) h.id = id;
+        const a = document.createElement('a');
+        a.href = '#' + id;
+        a.textContent = h.textContent;
+        a.classList.add('toc-' + h.tagName.toLowerCase());
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+          history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
+        });
+        nav.appendChild(a);
+      });
+      const title = document.createElement('div');
+      title.className = 'font-semibold text-sm mb-2 text-gray-700 dark:text-gray-300';
+      title.textContent = 'Table of Contents';
+      tocSidebar.innerHTML = '';
+      tocSidebar.appendChild(title);
+      tocSidebar.appendChild(nav);
+      tocSidebar.classList.remove('hidden');
+    }
+
+    function slugify(text) {
+      return String(text || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-')
+        .replace(/^-|-$/g, '') || 'section';
+    }
+
+    function renderFileContent(fileContent, url) {
       const fileContentElement = document.getElementById('file-content');
       if (!fileContent) {
         fileContentElement.innerHTML = '';
@@ -437,32 +547,70 @@
         return;
       }
 
-      // Configure marked with custom renderer for code blocks
-      const renderer = new marked.Renderer();
-
-      // Custom code block renderer to ensure language classes are set
-      // marked already escapes the code, so we can use it directly
-      renderer.code = function (code, language) {
-        const lang = language || '';
-        const langClass = lang ? ` class="language-${lang}"` : '';
-        // marked already escapes HTML in code, so we can use it directly
-        return `<pre><code${langClass}>${code}</code></pre>`;
+      // Extension -> highlight.js language for raw source files (no Markdown)
+      const codeExtensions = {
+        '.java': 'java',
+        '.js': 'javascript',
+        '.ts': 'typescript',
+        '.py': 'python',
+        '.go': 'go',
+        '.rs': 'rust',
+        '.c': 'c',
+        '.cpp': 'cpp',
+        '.cs': 'csharp',
+        '.rb': 'ruby',
+        '.php': 'php',
+        '.swift': 'swift',
+        '.kt': 'kotlin',
+        '.scala': 'scala',
+        '.sql': 'sql',
+        '.sh': 'bash',
+        '.bash': 'bash',
+        '.yaml': 'yaml',
+        '.yml': 'yaml',
+        '.json': 'json',
+        '.xml': 'xml',
+        '.html': 'html',
+        '.css': 'css'
       };
 
-      marked.setOptions({
-        breaks: true,
-        gfm: true,
-        headerIds: true,
-        mangle: false,
-        renderer: renderer
-      });
+      const ext = url.includes('.') ? '.' + url.split('.').pop().toLowerCase() : '';
+      const language = codeExtensions[ext];
 
-      // Parse markdown to HTML
-      const html = marked.parse(fileContent);
+      if (language) {
+        // Raw source file: render as a single code block (no Markdown)
+        const escaped = fileContent
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+        fileContentElement.innerHTML = `<pre><code class="language-${language}">${escaped}</code></pre>`;
+      } else {
+        // Markdown or unknown: parse as Markdown
+        const renderer = new marked.Renderer();
+        renderer.code = function (code, lang) {
+          const langClass = lang ? ` class="language-${lang}"` : '';
+          return `<pre><code${langClass}>${code}</code></pre>`;
+        };
+        marked.setOptions({
+          breaks: true,
+          gfm: true,
+          headerIds: true,
+          mangle: false,
+          renderer: renderer
+        });
+        fileContentElement.innerHTML = marked.parse(fileContent);
+      }
 
-      // Set the HTML content
-      fileContentElement.innerHTML = html;
       voiceControllerContent = fileContentElement.innerText || '';
+
+      buildTableOfContents(fileContentElement);
+
+      // Scroll to hash if present in URL (e.g. after refresh or direct link)
+      if (window.location.hash) {
+        const id = window.location.hash.slice(1);
+        setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 100);
+      }
 
       // Highlight all code blocks using highlight.js
       // Use setTimeout to ensure DOM is ready
