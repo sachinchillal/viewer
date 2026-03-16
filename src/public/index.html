@@ -41,13 +41,15 @@
     body {
       background-color: inherit;
       color: inherit;
+      /* overflow-x: hidden; */
     }
 
     .markdown-body {
       box-sizing: border-box;
       min-width: 200px;
       max-width: 980px;
-      margin: 0 auto;
+      margin: 0;
+      /* margin: 0 auto; */
       padding: 45px;
       background-color: #fff;
     }
@@ -67,11 +69,17 @@
       }
     }
 
-    .toc-sidebar {
+    .toc-sidebar,
+    .right-sidebar {
       position: sticky;
       top: 1rem;
       max-height: calc(100vh - 2rem);
       overflow-y: auto;
+    }
+
+    .right-sidebar {
+      font-size: 12px;
+      height: calc(100vh - 2rem);
     }
 
     .toc-sidebar a {
@@ -118,8 +126,8 @@
     }
 
     @media print {
-
-      /* @media screen { */
+      /* @media screen,
+    print { */
 
       ol,
       ul {
@@ -182,75 +190,91 @@
       h6 {
         margin: 0 !important;
       }
+
+      body.two-column-print .markdown-body {
+        column-count: 2;
+        column-gap: 0;
+        /* column-gap: 2rem; */
+      }
+
+      body.two-column-print h1 {
+        font-size: 1.25rem !important;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="container mx-auto m-4">
+  <div class="w-full max-w-full px-4 py-4 box-border">
     <div class="flex gap-6">
       <aside id="toc-sidebar" class="toc-sidebar w-48 shrink-0 no-print hidden"></aside>
-      <main class="flex-1 min-w-0">
+      <main class="flex-1 min-w-0 w-full">
         <div class="no-print flex justify-between items-center">
           <a href="/" class="text-blue-600 dark:text-blue-400">
             <h1 class="text-2xl font-bold">Viewer</h1>
           </a>
-          <div class="flex gap-2 mt-2">
-            <input type="checkbox" id="is-two-column-print" class="px-2 py-1 rounded text-sm border transition-colors"
-              placeholder="Is Two Column Print">
-            <label for="is-two-column-print" class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Is
-              Two Column Print</label>
-            <button type="button" id="btn-dark" class="px-2 py-1 rounded text-sm border transition-colors">Dark</button>
-            <button type="button" id="btn-light"
-              class="px-2 py-1 rounded text-sm border transition-colors">Light</button>
-          </div>
-        </div>
-        <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
-        <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-3">
-          <div class="flex items-center gap-2 min-w-0 flex-1">
-            <label for="voice-select"
-              class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Voice</label>
-            <select id="voice-select"
-              class="flex-1 min-w-[160px] max-w-xs px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-shadow">
-              <option value="">Select voice…</option>
-              <option value="default">Default</option>
-            </select>
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <label
-              class="flex items-center gap-1.5 cursor-pointer select-none text-sm text-gray-700 dark:text-gray-300 shrink-0">
-              <input type="checkbox" id="skip-code-blocks"
-                class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
-              <span>Skip code blocks</span>
-            </label>
-            <button type="button" id="btn-play" title="Play"
-              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 5v14l11-7L8 5z" />
-              </svg>
-            </button>
-            <button type="button" id="btn-pause" title="Pause"
-              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              </svg>
-            </button>
-            <button type="button" id="btn-resume" title="Resume"
-              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
-              </svg>
-            </button>
-            <button type="button" id="btn-stop" title="Stop"
-              class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 6h12v12H6z" />
-              </svg>
-            </button>
-          </div>
         </div>
         <div id="file-content" class="markdown-body mt-6"></div>
       </main>
+      <aside class="right-sidebar w-48 shrink-0 no-print flex flex-col">
+        <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File
+          Explorer</label>
+        <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
+        <i class="mt-auto"></i>
+
+        <div class="flex flex-col gap-2 mt-2">
+          <label for="is-two-column-print" class="font-medium text-gray-700 dark:text-gray-300 shrink-0">
+            <input type="checkbox" id="is-two-column-print" class="px-2 py-1 rounded border transition-colors"
+              placeholder="Is Two Column Print">
+            Is Two Column Print</label>
+          <div>
+            <button type="button" id="btn-dark"
+              class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">Dark</button>
+            <button type="button" id="btn-light"
+              class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">Light</button>
+          </div>
+        </div>
+        <i class="mt-auto"></i>
+        <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-2 justify-start">
+          <label for="voice-select" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">Voice</label>
+          <select id="voice-select"
+            class="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-colors"
+            style="width: stretch;">
+            <option value="">Select voice…</option>
+            <option value="default">Default</option>
+          </select>
+          <label
+            class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
+            <input type="checkbox" id="skip-code-blocks"
+              class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+            <span>Skip code blocks</span>
+          </label>
+          <button type="button" id="btn-play" title="Play"
+            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7L8 5z" />
+            </svg>
+          </button>
+          <button type="button" id="btn-pause" title="Pause"
+            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+          <button type="button" id="btn-resume" title="Resume"
+            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+            </svg>
+          </button>
+          <button type="button" id="btn-stop" title="Stop"
+            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6h12v12H6z" />
+            </svg>
+          </button>
+        </div>
+      </aside>
     </div>
   </div>
 
@@ -262,12 +286,14 @@
     // Voice
     const VOICE_STORAGE_KEY = 'viewer-voice';
     const SKIP_CODE_BLOCKS_KEY = 'viewer-skip-code-blocks';
+    const TWO_COLUMN_PRINT_KEY = 'viewer-two-column-print';
     const voiceSelect = document.getElementById('voice-select');
     const btnPlay = document.getElementById('btn-play');
     const btnPause = document.getElementById('btn-pause');
     const btnResume = document.getElementById('btn-resume');
     const btnStop = document.getElementById('btn-stop');
     const skipCodeBlocksCheckbox = document.getElementById('skip-code-blocks');
+    const twoColumnPrintCheckbox = document.getElementById('is-two-column-print');
     const codeblockAlternativeText = "See the code block for more details.";
     let voiceControllerContent = "";
 
@@ -277,6 +303,7 @@
     init();
     initTheme();
     initVoiceController();
+    initTwoColumnPrint();
 
 
     function init() {
@@ -315,6 +342,24 @@
 
       document.getElementById('btn-dark').addEventListener('click', () => applyTheme(THEME_DARK));
       document.getElementById('btn-light').addEventListener('click', () => applyTheme(THEME_LIGHT));
+    }
+
+    function initTwoColumnPrint() {
+      if (!twoColumnPrintCheckbox) return;
+      const saved = localStorage.getItem(TWO_COLUMN_PRINT_KEY);
+      const enabled = saved === 'true';
+      twoColumnPrintCheckbox.checked = enabled;
+      updateTwoColumnPrintClass(enabled);
+
+      twoColumnPrintCheckbox.addEventListener('change', () => {
+        const isChecked = twoColumnPrintCheckbox.checked;
+        localStorage.setItem(TWO_COLUMN_PRINT_KEY, String(isChecked));
+        updateTwoColumnPrintClass(isChecked);
+      });
+    }
+
+    function updateTwoColumnPrintClass(enabled) {
+      document.body.classList.toggle('two-column-print', enabled);
     }
     function applyTheme(mode) {
       // Toggle the 'dark' class on the <html> element
