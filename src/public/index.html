@@ -129,6 +129,61 @@
       scroll-behavior: smooth;
     }
 
+    /* Per-heading play control: appears on heading hover / focus-within */
+    .markdown-body h1.md-heading-with-play,
+    .markdown-body h2.md-heading-with-play,
+    .markdown-body h3.md-heading-with-play,
+    .markdown-body h4.md-heading-with-play,
+    .markdown-body h5.md-heading-with-play,
+    .markdown-body h6.md-heading-with-play {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.35rem 0.5rem;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .markdown-body .md-heading-text {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .markdown-body .md-heading-actions {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.25rem;
+      margin-top: 0.15em;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .markdown-body h1.md-heading-with-play:hover .md-heading-actions,
+    .markdown-body h2.md-heading-with-play:hover .md-heading-actions,
+    .markdown-body h3.md-heading-with-play:hover .md-heading-actions,
+    .markdown-body h4.md-heading-with-play:hover .md-heading-actions,
+    .markdown-body h5.md-heading-with-play:hover .md-heading-actions,
+    .markdown-body h6.md-heading-with-play:hover .md-heading-actions,
+    .markdown-body h1.md-heading-with-play:focus-within .md-heading-actions,
+    .markdown-body h2.md-heading-with-play:focus-within .md-heading-actions,
+    .markdown-body h3.md-heading-with-play:focus-within .md-heading-actions,
+    .markdown-body h4.md-heading-with-play:focus-within .md-heading-actions,
+    .markdown-body h5.md-heading-with-play:focus-within .md-heading-actions,
+    .markdown-body h6.md-heading-with-play:focus-within .md-heading-actions {
+      opacity: 1;
+    }
+
+    /* Touch / no-hover: keep control discoverable (primary interaction is still tap) */
+    @media (hover: none) {
+      .markdown-body .md-heading-actions {
+        opacity: 0.55;
+      }
+    }
+
     @media print {
       /* @media screen,
     print { */
@@ -512,15 +567,9 @@
       }
 
       btnPlay.addEventListener('click', () => {
-        const text = getSpeakableContent().trim();
+        const text = getSpeakableContent();
         if (!text) return;
-        speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        const voices = speechSynthesis.getVoices();
-        const chosen = voiceSelect.value && voices.find(v => v.name === voiceSelect.value);
-        if (chosen) u.voice = chosen;
-        u.lang = 'en';
-        speechSynthesis.speak(u);
+        speakText(text);
       });
 
       btnPause.addEventListener('click', () => {
@@ -537,18 +586,130 @@
       });
     }
 
-    function getSpeakableContent() {
-      const el = document.getElementById('file-content');
-      if (!el) return '';
+    function getSpeakableContentFromRoot(rootEl) {
+      if (!rootEl) return '';
+      const clone = rootEl.cloneNode(true);
+      clone.querySelectorAll('.md-heading-actions').forEach((w) => w.remove());
       if (skipCodeBlocksCheckbox && skipCodeBlocksCheckbox.checked) {
-        const clone = el.cloneNode(true);
-        // clone.querySelectorAll('pre').forEach((pre) => pre.remove());
         clone.querySelectorAll('pre').forEach((pre) => {
           pre.innerText = codeblockAlternativeText;
         });
-        return clone.innerText || '';
       }
-      return el.innerText || '';
+      return clone.innerText || '';
+    }
+
+    function getSpeakableContent() {
+      const el = document.getElementById('file-content');
+      return getSpeakableContentFromRoot(el).trim();
+    }
+
+    function getHeadingLevel(tagName) {
+      const m = /^H([1-6])$/i.exec(tagName || '');
+      return m ? parseInt(m[1], 10) : 0;
+    }
+
+    /** Siblings after `heading` until the next heading of same or higher outline level. */
+    function getSectionElementsAfterHeading(heading) {
+      const level = getHeadingLevel(heading.tagName);
+      const nodes = [];
+      let n = heading.nextElementSibling;
+      while (n) {
+        const nextLevel = getHeadingLevel(n.tagName);
+        if (nextLevel > 0 && nextLevel <= level) break;
+        nodes.push(n);
+        n = n.nextElementSibling;
+      }
+      return nodes;
+    }
+
+    function getSpeakableTextForHeadingSection(heading) {
+      const wrap = document.createElement('div');
+      wrap.appendChild(heading.cloneNode(true));
+      getSectionElementsAfterHeading(heading).forEach((el) => {
+        wrap.appendChild(el.cloneNode(true));
+      });
+      return getSpeakableContentFromRoot(wrap).trim();
+    }
+
+    /** Heading plus all following siblings inside the document (to end of article). */
+    function getSpeakableTextFromHeadingToEnd(heading) {
+      const wrap = document.createElement('div');
+      wrap.appendChild(heading.cloneNode(true));
+      let n = heading.nextElementSibling;
+      while (n) {
+        wrap.appendChild(n.cloneNode(true));
+        n = n.nextElementSibling;
+      }
+      return getSpeakableContentFromRoot(wrap).trim();
+    }
+
+    const SECTION_PLAY_SVG =
+      '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>';
+
+    const SECTION_PLAY_TO_END_SVG =
+      '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/><path d="M19 5h2v14h-2V5z"/></svg>';
+
+    const HEADING_AUDIO_BTN_CLASS =
+      'heading-audio-btn no-print p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors';
+
+    function speakText(text) {
+      const t = String(text || '').trim();
+      if (!t) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(t);
+      const voices = speechSynthesis.getVoices();
+      const chosen = voiceSelect && voiceSelect.value && voices.find((v) => v.name === voiceSelect.value);
+      if (chosen) u.voice = chosen;
+      u.lang = 'en';
+      speechSynthesis.speak(u);
+    }
+
+    function enhanceHeadingsWithSectionPlay(container) {
+      if (!container) return;
+      container.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+        if (heading.querySelector('.md-heading-actions')) return;
+        heading.classList.add('md-heading-with-play');
+
+        const textWrap = document.createElement('span');
+        textWrap.className = 'md-heading-text';
+        while (heading.firstChild) {
+          textWrap.appendChild(heading.firstChild);
+        }
+
+        const actions = document.createElement('span');
+        actions.className = 'md-heading-actions';
+        actions.setAttribute('role', 'group');
+        actions.setAttribute('aria-label', 'Speech playback for this heading');
+
+        const btnSection = document.createElement('button');
+        btnSection.type = 'button';
+        btnSection.className = HEADING_AUDIO_BTN_CLASS;
+        btnSection.setAttribute('aria-label', 'Play section from this heading');
+        btnSection.title = 'Play this section';
+        btnSection.innerHTML = SECTION_PLAY_SVG;
+        btnSection.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          speakText(getSpeakableTextForHeadingSection(heading));
+        });
+
+        const btnToEnd = document.createElement('button');
+        btnToEnd.type = 'button';
+        btnToEnd.className = HEADING_AUDIO_BTN_CLASS;
+        btnToEnd.setAttribute('aria-label', 'Play from this heading to end of document');
+        btnToEnd.title = 'Play from here to end';
+        btnToEnd.innerHTML = SECTION_PLAY_TO_END_SVG;
+        btnToEnd.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          speakText(getSpeakableTextFromHeadingToEnd(heading));
+        });
+
+        actions.appendChild(btnSection);
+        actions.appendChild(btnToEnd);
+        heading.appendChild(textWrap);
+        heading.appendChild(actions);
+      });
     }
 
     function updateUrl(path) {
@@ -745,6 +906,7 @@
       voiceControllerContent = fileContentElement.innerText || '';
 
       buildTableOfContents(fileContentElement);
+      enhanceHeadingsWithSectionPlay(fileContentElement);
 
       // Scroll to hash if present in URL (e.g. after refresh or direct link)
       if (window.location.hash) {
