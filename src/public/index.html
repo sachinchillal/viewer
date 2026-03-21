@@ -5,6 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viewer</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
   <!-- Highlight.js for syntax highlighting (dark + light) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
@@ -75,22 +79,22 @@
       top: 1rem;
       max-height: calc(100vh - 2rem);
       overflow-y: auto;
+      font-size: 12px;
     }
 
     .right-sidebar {
-      font-size: 12px;
       height: calc(100vh - 2rem);
     }
 
     .toc-sidebar a {
       display: block;
       padding: 0.25rem 0;
-      font-size: 0.875rem;
       color: inherit;
       text-decoration: none;
       border-left: 2px solid transparent;
       padding-left: 0.5rem;
       margin-left: 0;
+      font-size: 12px;
     }
 
     .toc-sidebar a:hover {
@@ -223,16 +227,22 @@
         <i class="mt-auto"></i>
 
         <div class="flex flex-col gap-2 mt-2">
-          <label for="is-two-column-print" class="font-medium text-gray-700 dark:text-gray-300 shrink-0">
-            <input type="checkbox" id="is-two-column-print" class="px-2 py-1 rounded border transition-colors"
-              placeholder="Is Two Column Print">
-            Is Two Column Print</label>
+          <label for="is-two-column-print"
+            class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
+            <input type="checkbox" id="is-two-column-print"
+              class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+            <span>Is Two Column Print</span>
+          </label>
           <div>
             <button type="button" id="btn-dark"
               class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">Dark</button>
             <button type="button" id="btn-light"
               class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">Light</button>
           </div>
+        </div>
+        <div class="mt-4">
+          <p class="font-medium text-gray-700 dark:text-gray-400">Toggle tags</p>
+          <div id="tag-toggle-controls" class="mt-1 flex flex-col gap-1"></div>
         </div>
         <i class="mt-auto"></i>
         <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-2 justify-start">
@@ -264,7 +274,8 @@
           <button type="button" id="btn-resume" title="Resume"
             class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+              <path d="M8 5v14l11-7L8 5z" />
+              <circle cx="18" cy="4" r="2" />
             </svg>
           </button>
           <button type="button" id="btn-stop" title="Stop"
@@ -283,6 +294,14 @@
     const THEME_DARK = 'dark';
     const THEME_LIGHT = 'light';
     const htmlElement = document.documentElement;
+    const TAGS_TO_TOGGLE = [
+      {
+        tag: 'blockquote',
+        label: 'Blockquote'
+      }
+    ];
+    const TAG_TOGGLE_STORAGE_KEY = 'viewer-tag-toggles';
+    const tagToggleContainer = document.getElementById('tag-toggle-controls');
     // Voice
     const VOICE_STORAGE_KEY = 'viewer-voice';
     const SKIP_CODE_BLOCKS_KEY = 'viewer-skip-code-blocks';
@@ -304,6 +323,7 @@
     initTheme();
     initVoiceController();
     initTwoColumnPrint();
+    initTagToggles();
 
 
     function init() {
@@ -360,6 +380,74 @@
 
     function updateTwoColumnPrintClass(enabled) {
       document.body.classList.toggle('two-column-print', enabled);
+    }
+
+    function getSavedTagToggles() {
+      try {
+        const raw = localStorage.getItem(TAG_TOGGLE_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.error('Failed to parse tag toggle settings', e);
+        return {};
+      }
+    }
+
+    function saveTagToggles(map) {
+      try {
+        localStorage.setItem(TAG_TOGGLE_STORAGE_KEY, JSON.stringify(map || {}));
+      } catch (e) {
+        console.error('Failed to save tag toggle settings', e);
+      }
+    }
+
+    function initTagToggles() {
+      if (!tagToggleContainer || !Array.isArray(TAGS_TO_TOGGLE) || TAGS_TO_TOGGLE.length === 0) return;
+
+      const saved = getSavedTagToggles();
+      tagToggleContainer.innerHTML = '';
+
+      TAGS_TO_TOGGLE.forEach(({ tag, label }) => {
+        const id = `toggle-tag-${tag}`;
+        const isEnabled = saved[tag] !== false;
+
+        const wrapper = document.createElement('label');
+        wrapper.setAttribute('for', id);
+        wrapper.className = 'w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300';
+        wrapper.innerHTML = `
+          <input type="checkbox" id="${id}" data-tag-toggle="${tag}"
+            class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+          <span>${label}</span>
+        `;
+
+        const input = wrapper.querySelector('input');
+        if (input) {
+          input.checked = isEnabled;
+          input.addEventListener('change', () => {
+            const current = getSavedTagToggles();
+            current[tag] = input.checked;
+            saveTagToggles(current);
+            applyTagVisibility(current);
+          });
+        }
+
+        tagToggleContainer.appendChild(wrapper);
+      });
+
+      applyTagVisibility(saved);
+    }
+
+    function applyTagVisibility(settings) {
+      const fileContentElement = document.getElementById('file-content');
+      if (!fileContentElement || !Array.isArray(TAGS_TO_TOGGLE)) return;
+
+      const state = settings || getSavedTagToggles();
+
+      TAGS_TO_TOGGLE.forEach(({ tag }) => {
+        const enabled = state[tag] !== false;
+        fileContentElement.querySelectorAll(tag).forEach((el) => {
+          el.classList.toggle('hidden', !enabled);
+        });
+      });
     }
     function applyTheme(mode) {
       // Toggle the 'dark' class on the <html> element
@@ -478,7 +566,7 @@
       fetch(url)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
+
           // const directories = root ? ['..', ...data] : data;
           const directories = ['..', ...data.list];
           renderDirectories(directories);
@@ -504,7 +592,7 @@
       }).join('');
     }
     function handleDirectoryClick(directory) {
-      console.log('handleDirectoryClick', directory);
+
       if (directory === '..') {
         // Go back to parent directory
         if (currentRootDirectory === '') {
@@ -513,7 +601,7 @@
         } else {
           // Remove the last path segment or add another '..'
           const pathParts = currentRootDirectory.split('/').filter(p => p);
-          console.log('pathParts', pathParts);
+
           if (pathParts.length > 0 && pathParts[pathParts.length - 1] !== '..') {
             // Remove the last path segment if it's not '..'
             pathParts.pop();
@@ -566,7 +654,7 @@
         nav.appendChild(a);
       });
       const title = document.createElement('div');
-      title.className = 'font-semibold text-sm mb-2 text-gray-700 dark:text-gray-300';
+      title.className = 'font-semibold mb-2 text-gray-700 dark:text-gray-300';
       title.textContent = 'Table of Contents';
       tocSidebar.innerHTML = '';
       tocSidebar.appendChild(title);
@@ -590,6 +678,15 @@
         fileContentElement.innerHTML = '';
         voiceControllerContent = '';
         return;
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
       }
 
       // Extension -> highlight.js language for raw source files (no Markdown)
@@ -624,18 +721,14 @@
 
       if (language) {
         // Raw source file: render as a single code block (no Markdown)
-        const escaped = fileContent
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
+        const escaped = escapeHtml(fileContent);
         fileContentElement.innerHTML = `<pre><code class="language-${language}">${escaped}</code></pre>`;
       } else {
         // Markdown or unknown: parse as Markdown
         const renderer = new marked.Renderer();
         renderer.code = function (code, lang) {
           const langClass = lang ? ` class="language-${lang}"` : '';
-          return `<pre><code${langClass}>${code}</code></pre>`;
+          return `<pre><code${langClass}>${escapeHtml(code)}</code></pre>`;
         };
         marked.setOptions({
           breaks: true,
@@ -646,6 +739,8 @@
         });
         fileContentElement.innerHTML = marked.parse(fileContent);
       }
+
+      applyTagVisibility();
 
       voiceControllerContent = fileContentElement.innerText || '';
 
