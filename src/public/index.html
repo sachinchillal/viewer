@@ -314,6 +314,20 @@
               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
             <span>Skip code blocks</span>
           </label>
+          <div class="w-full flex flex-col gap-1.5 mt-1">
+            <div class="flex items-center justify-between gap-2">
+              <label for="speech-rate" class="font-medium text-gray-700 dark:text-gray-400 text-xs shrink-0">Speech
+                rate</label>
+              <span id="speech-rate-value"
+                class="text-xs tabular-nums text-gray-600 dark:text-gray-400 shrink-0">1.0×</span>
+            </div>
+            <input type="range" id="speech-rate" min="0.5" max="2" step="0.1" value="1"
+              class="w-full h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-600 accent-blue-600 dark:accent-blue-500 cursor-pointer">
+            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 leading-none">
+              <span>Slower</span>
+              <span>Faster</span>
+            </div>
+          </div>
           <button type="button" id="btn-play" title="Play"
             class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -360,8 +374,13 @@
     // Voice
     const VOICE_STORAGE_KEY = 'viewer-voice';
     const SKIP_CODE_BLOCKS_KEY = 'viewer-skip-code-blocks';
+    const SPEECH_RATE_KEY = 'viewer-speech-rate';
+    const SPEECH_RATE_MIN = 0.5;
+    const SPEECH_RATE_MAX = 2;
     const TWO_COLUMN_PRINT_KEY = 'viewer-two-column-print';
     const voiceSelect = document.getElementById('voice-select');
+    const speechRateInput = document.getElementById('speech-rate');
+    const speechRateValueEl = document.getElementById('speech-rate-value');
     const btnPlay = document.getElementById('btn-play');
     const btnPause = document.getElementById('btn-pause');
     const btnResume = document.getElementById('btn-resume');
@@ -373,6 +392,12 @@
 
     let directories = [];
     let currentRootDirectory = '';
+
+    function clampSpeechRate(n) {
+      const x = Number(n);
+      if (!Number.isFinite(x)) return 1;
+      return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
+    }
 
     init();
     initTheme();
@@ -566,6 +591,31 @@
         });
       }
 
+      function formatSpeechRateDisplay(v) {
+        const x = clampSpeechRate(v);
+        return (Math.round(x * 10) / 10).toFixed(1) + '×';
+      }
+
+      function syncSpeechRateUi() {
+        if (!speechRateInput) return;
+        const saved = localStorage.getItem(SPEECH_RATE_KEY);
+        if (saved != null && saved !== '') {
+          const r = clampSpeechRate(parseFloat(saved));
+          speechRateInput.value = String(r);
+        }
+        if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(speechRateInput.value);
+      }
+
+      syncSpeechRateUi();
+      if (speechRateInput) {
+        speechRateInput.addEventListener('input', () => {
+          const r = clampSpeechRate(parseFloat(speechRateInput.value));
+          speechRateInput.value = String(r);
+          localStorage.setItem(SPEECH_RATE_KEY, speechRateInput.value);
+          if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(r);
+        });
+      }
+
       btnPlay.addEventListener('click', () => {
         const text = getSpeakableContent();
         if (!text) return;
@@ -661,6 +711,9 @@
       const chosen = voiceSelect && voiceSelect.value && voices.find((v) => v.name === voiceSelect.value);
       if (chosen) u.voice = chosen;
       u.lang = 'en';
+      if (speechRateInput) {
+        u.rate = clampSpeechRate(parseFloat(speechRateInput.value));
+      }
       speechSynthesis.speak(u);
     }
 
