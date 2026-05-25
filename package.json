@@ -10,7 +10,10 @@
     "local"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "b": "tsc",
+    "build": "tsc",
+    "test": "jest",
+    "start": "ts-node src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -20,11 +23,17 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.0.10",
+    "@types/supertest": "^7.2.0",
+    "jest": "^30.4.2",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.2.1"
   }
 }

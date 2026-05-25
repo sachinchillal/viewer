@@ -5,10 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viewer</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
   <!-- Highlight.js for syntax highlighting (dark + light) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
@@ -278,6 +278,7 @@
       <aside class="right-sidebar w-48 shrink-0 no-print flex flex-col">
         <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File
           Explorer</label>
+        <p id="explorer-error" class="mt-1 text-sm text-red-600 dark:text-red-400 hidden no-print" role="alert"></p>
         <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
         <i class="mt-auto"></i>
 
@@ -359,6 +360,7 @@
   </div>
 
   <script>
+    const API_BASE_URL = '/viewer/api';
     const THEME_KEY = 'viewer-theme';
     const THEME_DARK = 'dark';
     const THEME_LIGHT = 'light';
@@ -775,12 +777,37 @@
       window.history.pushState({ path }, '', newUrl);
     }
 
-    function getDirectories(root = '') {
-      const url = root ? `/api/directories?root=${encodeURIComponent(root)}` : '/api/directories';
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
+    function showExplorerError(message) {
+      const el = document.getElementById('explorer-error');
+      if (!message) {
+        el.textContent = '';
+        el.classList.add('hidden');
+        return;
+      }
+      el.textContent = message;
+      el.classList.remove('hidden');
+    }
 
+    function formatApiError(data, status) {
+      if (data?.error && data?.path) {
+        return `${data.error}: ${data.path}`;
+      }
+      if (data?.error) {
+        return data.error;
+      }
+      return `Request failed (${status})`;
+    }
+
+    function getDirectories(root = '') {
+      const url = root ? `${API_BASE_URL}/directories?root=${encodeURIComponent(root)}` : `${API_BASE_URL}/directories`;
+      return fetch(url)
+        .then(async response => {
+          const data = await response.json();
+          if (!response.ok) {
+            showExplorerError(formatApiError(data, response.status));
+            return false;
+          }
+          showExplorerError('');
           // const directories = root ? ['..', ...data] : data;
           const directories = ['..', ...data.list];
           renderDirectories(directories);
@@ -790,9 +817,12 @@
             document.getElementById('file-content').innerHTML = '';
             buildTableOfContents(null);
           }
+          return true;
         })
         .catch(error => {
+          showExplorerError('Failed to fetch directories');
           console.error('Error fetching directories:', error);
+          return false;
         });
     }
     function renderDirectories(directories) {
@@ -806,12 +836,12 @@
       }).join('');
     }
     function handleDirectoryClick(directory) {
-
+      let nextRoot;
       if (directory === '..') {
         // Go back to parent directory
         if (currentRootDirectory === '') {
           // At root, navigate to parent directory
-          currentRootDirectory = '..';
+          nextRoot = '..';
         } else {
           // Remove the last path segment or add another '..'
           const pathParts = currentRootDirectory.split('/').filter(p => p);
@@ -819,21 +849,25 @@
           if (pathParts.length > 0 && pathParts[pathParts.length - 1] !== '..') {
             // Remove the last path segment if it's not '..'
             pathParts.pop();
-            currentRootDirectory = pathParts.length > 0 ? pathParts.join('/') : '';
+            nextRoot = pathParts.length > 0 ? pathParts.join('/') : '';
           } else {
             // Add another '..' to go further up
-            currentRootDirectory = currentRootDirectory ? `${currentRootDirectory}/..` : '..';
+            nextRoot = currentRootDirectory ? `${currentRootDirectory}/..` : '..';
           }
         }
       } else {
         // Navigate into the selected directory
-        currentRootDirectory = currentRootDirectory
+        nextRoot = currentRootDirectory
           ? `${currentRootDirectory}/${directory}`
           : directory;
       }
-      // Update URL with new path
-      updateUrl(currentRootDirectory);
-      getDirectories(currentRootDirectory);
+      getDirectories(nextRoot).then(ok => {
+        if (ok) {
+          currentRootDirectory = nextRoot;
+          // Update URL with new path
+          updateUrl(currentRootDirectory);
+        }
+      });
     }
     function renderDirectory(directory) {
       const directoryItem = document.createElement('div');
