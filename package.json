@@ -10,8 +10,10 @@
     "local"
   ],
   "scripts": {
-    "b": "tsc",
+    "b": "npm run build",
     "build": "tsc",
+    "build:copy": "tsc && npm run copy-public",
+    "copy-public": "copyfiles -u 1 \"src/public/**/*\" dist",
     "test": "jest",
     "start": "ts-node src/index.ts"
   },
@@ -26,6 +28,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.10",
     "@types/supertest": "^7.2.0",
+    "copyfiles": "^2.4.1",
     "jest": "^30.4.2",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.9",

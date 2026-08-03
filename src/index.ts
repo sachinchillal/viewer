@@ -15,7 +15,7 @@ const MAX_PARENT_DIRECTORY = process.env.MAX_PARENT_DIRECTORY || "private"; // a
 
 
 const app = express();
-const router = Router();
+const apiRouter = Router();
 
 
 const ALLOWED_BASE_PATH =
@@ -58,21 +58,36 @@ const isFileOrDirectoryExists = (filePath: string): Promise<boolean> =>
 const getFileExtension = (filePath: string): string =>
   path.extname(filePath).slice(1).toLowerCase();
 
-// Middleware to serve static files from "public" folder
-router.use(express.static(path.join(__dirname, 'public')));
+const ASSET_EXTENSIONS = new Set([
+  'svg', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'bmp', 'avif'
+]);
 
-// Handle root and /viewer/ subpath (for reverse-proxy deployments)
-router.get(['/', '/viewer', '/viewer/'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+const ASSET_MIME_TYPES: Record<string, string> = {
+  svg: 'image/svg+xml',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  ico: 'image/x-icon',
+  bmp: 'image/bmp',
+  avif: 'image/avif'
+};
 
-router.get('/api', (req: Request, res: Response) => {
+apiRouter.get('/', (req: Request, res: Response) => {
   res.json({ message: 'API is working fine...!' });
 });
-router.get('/api/ping', (req: Request, res: Response) => {
+apiRouter.get('/ping', (req: Request, res: Response) => {
   res.json({ message: 'pong' });
 });
-router.get('/api/directories', async (req: Request, res: Response) => {
+const listDirectory = (dirPath: string): string[] => {
+  // sort the list alphabetically with numeric prefix
+  const list = fs.readdirSync(dirPath);
+  list.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+  return list;
+};
+
+apiRouter.get('/directories', async (req: Request, res: Response) => {
   const root = req.query.root as string;
 
   const response = {
@@ -81,9 +96,7 @@ router.get('/api/directories', async (req: Request, res: Response) => {
     message: '' as string
   }
   if (!root) {
-    response.list = fs.readdirSync(ALLOWED_BASE_PATH);
-    // sort the list alphabetically with numeric prefix
-    response.list.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    response.list = listDirectory(ALLOWED_BASE_PATH);
     res.json(response);
     return;
   }
@@ -107,15 +120,16 @@ router.get('/api/directories', async (req: Request, res: Response) => {
 
   if (allowedTypes.includes(extension)) {
     response.fileContent = fs.readFileSync(resolvedPath, 'utf8');
+    // Always show siblings in the parent folder while viewing a file
+    const parentDir = path.dirname(resolvedPath);
+    response.list = listDirectory(parentDir);
     res.json(response);
     return;
   }
 
   const stat = fs.statSync(resolvedPath);
   if (stat.isDirectory()) {
-    response.list = fs.readdirSync(resolvedPath);
-    // sort the list alphabetically with numeric prefix
-    response.list.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    response.list = listDirectory(resolvedPath);
     res.json(response);
     return;
   }
@@ -130,10 +144,51 @@ router.get('/api/directories', async (req: Request, res: Response) => {
   res.status(404).json(response);
 });
 
+apiRouter.get('/asset', async (req: Request, res: Response) => {
+  const root = req.query.root as string;
+  if (!root) {
+    res.status(400).send('Missing root');
+    return;
+  }
 
+  const resolvedPath = await resolveSafePath(root);
+  if (!resolvedPath) {
+    res.status(400).send('Incorrect path');
+    return;
+  }
 
-// Mount the router on the app
-app.use('/viewer', router);
+  const extension = getFileExtension(resolvedPath);
+  if (!ASSET_EXTENSIONS.has(extension)) {
+    res.status(403).send('Access denied for such file type');
+    return;
+  }
+
+  const exists = await isFileOrDirectoryExists(resolvedPath);
+  if (!exists) {
+    res.status(404).send('File not found');
+    return;
+  }
+
+  const stat = fs.statSync(resolvedPath);
+  if (!stat.isFile()) {
+    res.status(404).send('Not a file');
+    return;
+  }
+
+  res.type(ASSET_MIME_TYPES[extension] || 'application/octet-stream');
+  res.sendFile(resolvedPath);
+});
+
+// To deploy in a root path, use this route
+app.use('/api', apiRouter);
+// To deploy in a subpath, use this route
+// API routes: /viewer/api/*
+// app.use('/viewer/api', apiRouter);
+// app.get(['/', '/viewer', '/viewer/'], (_req: Request, res: Response) => {
+//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// });
+
+app.use('/', express.static(path.join(__dirname, 'public')));
 
 // Catch-all route handler
 app.all(/.*/, (req, res) => {
@@ -146,8 +201,10 @@ if (process.env.NODE_ENV !== 'test') {
   if (process.env.NODE_ENV === 'production') {
     app.listen();
   } else {
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+    const server = app.listen(PORT, () => {
+      const addr = server.address();
+      const actualPort = typeof addr === 'object' && addr ? addr.port : PORT;
+      console.log(`Server is running on http://localhost:${actualPort}`);
     });
   }
 }

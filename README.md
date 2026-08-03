@@ -31,7 +31,34 @@ npx jest
 npx jest -t "with invalid file type"
 ```
 
+## UI
+
+- Landing Page: http://localhost:3000
+    - from src/public/index.html
+
 ## APIs
 
 - http://localhost:3000/api/directories
 - http://localhost:3000/api/directories?root=../..
+
+## Deployment
+
+UI Changes in src/public/index.html:
+
+```javascript
+// To deploy in a root path, use this URL
+const API_BASE_URL = '/api';
+// To deploy in a subpath, use this URL
+// const API_BASE_URL = '/viewer/api';
+```
+
+
+API Changes in src/index.ts:
+
+```typescript
+// To deploy in a root path, use this route
+app.use('/api', apiRouter);
+// To deploy in a subpath, use this route
+// API routes: /viewer/api/*
+// app.use('/viewer/api', apiRouter);
+```

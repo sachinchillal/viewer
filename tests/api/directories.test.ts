@@ -6,7 +6,7 @@ import { createTestDataDirectories } from '../utils/app';
 import { TestDataDirectories } from '../data/directories.data';
 
 
-const API_BASE_URL = '/viewer/api/';
+const API_BASE_URL = '/api/';
 
 describe(`GET ${API_BASE_URL}directories`, () => {
   it('responds with status 200', async () => {
@@ -103,19 +103,20 @@ describe(`GET ${API_BASE_URL}directories`, () => {
       expect(res.body.message).toBe('');
     });
   });
-  describe('with private/nested-folder/a.md', () => {
-    it('should return the file content', async () => {
-      const root = `${TestDataDirectories.folder}/../a.md`;
+  describe('with private/nested-folder/../sample.md', () => {
+    it('should return the file content and parent directory list', async () => {
+      const file = TestDataDirectories.files[0];
+      const root = `${TestDataDirectories.folder}/nested-folder/../${file}`;
       const res = await request(app).get(`${API_BASE_URL}directories?root=${root}`);
 
-      const dirNames = [];
-      const fileNames = [];
+      const dirNames = TestDataDirectories.children.map(child => child.folder);
+      const fileNames = TestDataDirectories.files;
 
       expect(res.status).toBe(200);
       expect(res.body.list).toEqual(
         expect.arrayContaining([...dirNames, ...fileNames])
       );
-      expect(res.body.fileContent).toBe('');
+      expect(res.body.fileContent).toBe(`# ${file}\n`);
       expect(res.body.message).toBe('');
     });
   });
@@ -145,8 +146,14 @@ describe(`GET ${API_BASE_URL}directories`, () => {
       const root = `${TestDataDirectories.folder}/${file}`;
       const res = await request(app).get(`${API_BASE_URL}directories?root=${root}`);
 
+      const dirNames = TestDataDirectories.children.map(child => child.folder);
+      const fileNames = TestDataDirectories.files;
+
       expect(res.status).toBe(200);
       expect(res.body.fileContent).toBe(`# ${file}\n`);
+      expect(res.body.list).toEqual(
+        expect.arrayContaining([...dirNames, ...fileNames])
+      );
       expect(res.body.message).toBe('');
     });
   });
@@ -156,8 +163,14 @@ describe(`GET ${API_BASE_URL}directories`, () => {
       const root = `${TestDataDirectories.folder}/${file}`;
       const res = await request(app).get(`${API_BASE_URL}directories?root=${root}`);
 
+      const dirNames = TestDataDirectories.children.map(child => child.folder);
+      const fileNames = TestDataDirectories.files;
+
       expect(res.status).toBe(200);
       expect(res.body.fileContent).toBe(`# ${file}\n`);
+      expect(res.body.list).toEqual(
+        expect.arrayContaining([...dirNames, ...fileNames])
+      );
       expect(res.body.message).toBe('');
     });
   });
@@ -165,12 +178,16 @@ describe(`GET ${API_BASE_URL}directories`, () => {
     TestDataDirectories.children[0].files.map((file) => [file, file] as const)
   )('with private/1-file/%s', (file) => {
     it('should return the file content of the file', async () => {
-      const root = `${TestDataDirectories.folder}/${TestDataDirectories.children[0].folder}/${file}`;
+      const nested = TestDataDirectories.children[0];
+      const root = `${TestDataDirectories.folder}/${nested.folder}/${file}`;
       const res = await request(app).get(`${API_BASE_URL}directories?root=${root}`);
 
       expect(res.status).toBe(200);
       // console.log(root, ' -> ', res.body.fileContent);
       expect(res.body.fileContent).toBe(`# ${file}\n`);
+      expect(res.body.list).toEqual(
+        expect.arrayContaining(nested.files)
+      );
       expect(res.body.message).toBe('');
     });
   });

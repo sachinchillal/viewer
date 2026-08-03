@@ -35,6 +35,7 @@
     html {
       background-color: #fff;
       color: #000;
+      scroll-behavior: smooth;
     }
 
     html.dark {
@@ -45,45 +46,75 @@
     body {
       background-color: inherit;
       color: inherit;
-      /* overflow-x: hidden; */
+      overflow-x: hidden;
     }
 
-    .markdown-body {
-      box-sizing: border-box;
-      min-width: 200px;
-      max-width: 980px;
-      margin: 0;
-      /* margin: 0 auto; */
-      padding: 45px;
-      background-color: #fff;
+    body.drawer-open {
+      overflow: hidden;
     }
 
-    html.dark .markdown-body {
-      background-color: #0d1117;
+    .app-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: inherit;
     }
 
-    .markdown-body ol,
-    .markdown-body ul {
-      list-style: auto;
+    .app-brand-logo {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      object-fit: contain;
     }
 
-    @media (max-width: 767px) {
-      .markdown-body {
-        padding: 15px;
+    @media (min-width: 1024px) {
+      .app-brand-logo {
+        width: 32px;
+        height: 32px;
       }
     }
 
-    .toc-sidebar,
-    .right-sidebar {
-      position: sticky;
-      top: 1rem;
-      max-height: calc(100vh - 2rem);
-      overflow-y: auto;
-      font-size: 12px;
+    .panel-drawer {
+      transition: transform 0.2s ease-out;
     }
 
-    .right-sidebar {
-      height: calc(100vh - 2rem);
+    @media (max-width: 1023px) {
+      .panel-drawer {
+        overflow-y: auto;
+        max-height: 100vh;
+      }
+
+      .panel-drawer-left {
+        transform: translateX(-100%);
+      }
+
+      .panel-drawer-right {
+        transform: translateX(100%);
+      }
+
+      .panel-drawer.panel-open {
+        transform: translateX(0);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .panel-drawer {
+        transform: none !important;
+      }
+
+      .toc-sidebar,
+      .right-sidebar {
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+        font-size: 12px;
+      }
+
+      .right-sidebar {
+        height: calc(100vh - 2rem);
+      }
     }
 
     .toc-sidebar a {
@@ -125,8 +156,49 @@
       margin-left: 3rem;
     }
 
-    html {
-      scroll-behavior: smooth;
+
+    .markdown-body {
+      box-sizing: border-box;
+      min-width: 200px;
+      max-width: 980px;
+      margin: 0;
+      /* margin: 0 auto; */
+      padding: 45px;
+      background-color: #fff;
+    }
+
+    html.dark .markdown-body {
+      background-color: #0d1117;
+    }
+
+    .markdown-body ol,
+    .markdown-body ul {
+      list-style: auto;
+    }
+
+    @media (max-width: 1023px) {
+      .markdown-body {
+        max-width: 100%;
+        padding: 12px 16px;
+      }
+    }
+
+    .markdown-body pre,
+    .markdown-body table {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .markdown-body h1 {
+      color: #00b000;
+    }
+
+    .markdown-body h2 {
+      color: #00a000;
+    }
+
+    .markdown-body h3 {
+      color: #009000;
     }
 
     /* Per-heading play control: appears on heading hover / focus-within */
@@ -188,17 +260,6 @@
       /* @media screen,
     print { */
 
-      ol,
-      ul {
-        line-height: 1.2;
-      }
-
-      .no-print,
-      #toc-sidebar {
-        display: none !important;
-        /* Hide elements in print */
-      }
-
       html,
       body {
         background: #fff !important;
@@ -206,21 +267,18 @@
         line-height: 1 !important;
       }
 
-      .markdown-body {
-        background-color: #fff !important;
-        color: #000 !important;
-        margin: 0 !important;
-        padding: 0 !important;
+      ol,
+      ul {
+        line-height: 1.2;
       }
 
-      .markdown-body a {
-        color: #0550ae !important;
-      }
-
-      .markdown-body pre,
-      .markdown-body code,
-      .markdown-body .hljs {
-        border: 1px solid #e1e4e8;
+      .no-print,
+      #toc-sidebar,
+      #controls-sidebar,
+      #mobile-header,
+      #panel-backdrop {
+        display: none !important;
+        /* Hide elements in print */
       }
 
       pre,
@@ -250,6 +308,25 @@
         margin: 0 !important;
       }
 
+
+      .markdown-body {
+        background-color: #fff !important;
+        color: #000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .markdown-body a {
+        color: #0550ae !important;
+      }
+
+      .markdown-body pre,
+      .markdown-body code,
+      .markdown-body .hljs {
+        border: 1px solid #e1e4e8;
+      }
+
+
       body.two-column-print .markdown-body {
         column-count: 2;
         column-gap: 0;
@@ -264,18 +341,42 @@
 </head>
 
 <body>
-  <div class="w-full max-w-full px-4 py-4 box-border">
-    <div class="flex gap-6">
-      <aside id="toc-sidebar" class="toc-sidebar w-48 shrink-0 no-print hidden"></aside>
+  <div id="panel-backdrop" class="fixed inset-0 z-40 bg-black/40 hidden lg:hidden no-print" aria-hidden="true"></div>
+  <div class="w-full max-w-full px-3 sm:px-4 py-4 box-border">
+    <div class="flex flex-col lg:flex-row lg:gap-6">
+      <aside id="toc-sidebar"
+        class="panel-drawer panel-drawer-left toc-sidebar no-print hidden fixed inset-y-0 left-0 z-50 w-[min(85vw,18rem)] p-4 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-lg lg:static lg:inset-auto lg:z-auto lg:w-48 lg:shrink-0 lg:p-0 lg:shadow-none lg:border-0">
+      </aside>
       <main class="flex-1 min-w-0 w-full">
-        <div class="no-print flex justify-between items-center">
-          <a href="/" class="text-blue-600 dark:text-blue-400">
-            <h1 class="text-2xl font-bold">Viewer</h1>
+        <header id="mobile-header"
+          class="no-print lg:hidden sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 mb-2 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-700 bg-inherit">
+          <a href="/" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
+            <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
+            <span class="text-xl font-bold leading-none">Viewer</span>
+          </a>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" id="btn-mobile-toc" aria-expanded="false" aria-controls="toc-sidebar"
+              aria-label="Open table of contents"
+              class="min-h-11 px-3 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">Contents</button>
+            <button type="button" id="btn-mobile-menu" aria-expanded="false" aria-controls="controls-sidebar"
+              aria-label="Open menu"
+              class="min-h-11 px-3 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">Menu</button>
+          </div>
+        </header>
+        <div class="no-print hidden lg:flex justify-between items-center">
+          <a href="/" class="app-brand text-blue-600 dark:text-blue-400">
+            <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
+            <h1 class="text-2xl font-bold leading-none m-0">Viewer</h1>
           </a>
         </div>
-        <div id="file-content" class="markdown-body mt-6"></div>
+        <div id="file-content" class="markdown-body mt-4 lg:mt-6">
+          <p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">
+            Select a file from the File Explorer to view its contents.
+          </p>
+        </div>
       </main>
-      <aside class="right-sidebar w-48 shrink-0 no-print flex flex-col">
+      <aside id="controls-sidebar"
+        class="panel-drawer panel-drawer-right right-sidebar no-print flex flex-col fixed inset-y-0 right-0 z-50 w-[min(85vw,18rem)] p-4 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-lg lg:static lg:inset-auto lg:z-auto lg:w-48 lg:shrink-0 lg:p-0 lg:shadow-none lg:border-0">
         <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File
           Explorer</label>
         <p id="explorer-error" class="mt-1 text-sm text-red-600 dark:text-red-400 hidden no-print" role="alert"></p>
@@ -360,7 +461,10 @@
   </div>
 
   <script>
-    const API_BASE_URL = '/viewer/api';
+    // To deploy in a root path, use this URL
+    const API_BASE_URL = '/api';
+    // To deploy in a subpath, use this URL
+    // const API_BASE_URL = '/viewer/api';
     const THEME_KEY = 'viewer-theme';
     const THEME_DARK = 'dark';
     const THEME_LIGHT = 'light';
@@ -394,6 +498,8 @@
 
     let directories = [];
     let currentRootDirectory = '';
+    let viewingFile = false;
+    let closeMobilePanels = () => { };
 
     function clampSpeechRate(n) {
       const x = Number(n);
@@ -406,6 +512,7 @@
     initVoiceController();
     initTwoColumnPrint();
     initTagToggles();
+    initMobilePanels();
 
 
     function init() {
@@ -424,12 +531,117 @@
         }
       });
 
+      const fileContentElement = document.getElementById('file-content');
+      if (fileContentElement) {
+        fileContentElement.addEventListener('click', handleFileContentLinkClick);
+      }
+
       // Handle browser back/forward buttons
       window.addEventListener('popstate', (e) => {
         const urlParams = new URLSearchParams(window.location.search);
         const pathFromUrl = urlParams.get('path') || '';
         currentRootDirectory = pathFromUrl;
         getDirectories(currentRootDirectory);
+      });
+    }
+
+    function navigateToViewerPath(path, hash) {
+      currentRootDirectory = path;
+      updateUrl(path, hash);
+      return getDirectories(path);
+    }
+
+    function handleFileContentLinkClick(e) {
+      const anchor = e.target.closest && e.target.closest('a');
+      if (!anchor || !e.currentTarget.contains(anchor)) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#' || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        return;
+      }
+
+      // Same-document anchor
+      if (href.charAt(0) === '#') {
+        e.preventDefault();
+        const id = decodeURIComponent(href.slice(1));
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
+        return;
+      }
+
+      let url;
+      try {
+        url = new URL(href, window.location.href);
+      } catch (_) {
+        return;
+      }
+
+      // In-app viewer links: /?path=...
+      if (url.origin === window.location.origin && url.searchParams.has('path')) {
+        e.preventDefault();
+        const path = url.searchParams.get('path') || '';
+        const hash = url.hash ? url.hash.slice(1) : '';
+        navigateToViewerPath(path, hash);
+      }
+    }
+
+    function initMobilePanels() {
+      const mobileMq = window.matchMedia('(max-width: 1023px)');
+      const backdrop = document.getElementById('panel-backdrop');
+      const btnToc = document.getElementById('btn-mobile-toc');
+      const btnMenu = document.getElementById('btn-mobile-menu');
+      const tocSidebar = document.getElementById('toc-sidebar');
+      const controlsSidebar = document.getElementById('controls-sidebar');
+      let openPanel = null;
+
+      function isMobile() {
+        return mobileMq.matches;
+      }
+
+      function setExpanded(btn, expanded) {
+        if (btn) btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      }
+
+      closeMobilePanels = function () {
+        openPanel = null;
+        tocSidebar?.classList.remove('panel-open');
+        controlsSidebar?.classList.remove('panel-open');
+        setExpanded(btnToc, false);
+        setExpanded(btnMenu, false);
+        backdrop?.classList.add('hidden');
+        backdrop?.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('drawer-open');
+      };
+
+      function openPanelType(type) {
+        if (!isMobile()) return;
+        const panel = type === 'toc' ? tocSidebar : controlsSidebar;
+        const btn = type === 'toc' ? btnToc : btnMenu;
+        if (!panel || panel.classList.contains('hidden')) return;
+
+        if (openPanel === type) {
+          closeMobilePanels();
+          return;
+        }
+
+        closeMobilePanels();
+        openPanel = type;
+        panel.classList.add('panel-open');
+        setExpanded(btnToc, type === 'toc');
+        setExpanded(btnMenu, type === 'controls');
+        backdrop?.classList.remove('hidden');
+        backdrop?.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('drawer-open');
+      }
+
+      btnToc?.addEventListener('click', () => openPanelType('toc'));
+      btnMenu?.addEventListener('click', () => openPanelType('controls'));
+      backdrop?.addEventListener('click', closeMobilePanels);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMobilePanels();
+      });
+      mobileMq.addEventListener('change', (e) => {
+        if (!e.matches) closeMobilePanels();
       });
     }
 
@@ -767,14 +979,20 @@
       });
     }
 
-    function updateUrl(path) {
-      // Build URL with readable path: encode only &, =, % so slashes stay as /
+    function encodeViewerPath(path) {
+      // Encode only &, =, % so slashes stay as /
+      return String(path || '').replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
+    }
+
+    function updateUrl(path, hash) {
       let newUrl = window.location.origin + window.location.pathname;
       if (path) {
-        const safePath = path.replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
-        newUrl += '?path=' + safePath;
+        newUrl += '?path=' + encodeViewerPath(path);
       }
-      window.history.pushState({ path }, '', newUrl);
+      if (hash) {
+        newUrl += '#' + String(hash).replace(/^#/, '');
+      }
+      window.history.pushState({ path, hash: hash || '' }, '', newUrl);
     }
 
     function showExplorerError(message) {
@@ -800,7 +1018,7 @@
 
     function getDirectories(root = '') {
       const url = root ? `${API_BASE_URL}/directories?root=${encodeURIComponent(root)}` : `${API_BASE_URL}/directories`;
-      return fetch(url)
+      return fetch(url, { cache: 'no-store' })
         .then(async response => {
           const data = await response.json();
           if (!response.ok) {
@@ -808,14 +1026,17 @@
             return false;
           }
           showExplorerError('');
-          // const directories = root ? ['..', ...data] : data;
-          const directories = ['..', ...data.list];
-          renderDirectories(directories);
+          viewingFile = Boolean(data.fileContent);
+          const list = Array.isArray(data.list) ? data.list : [];
+          const directories = ['..', ...list];
+          const activeName = viewingFile
+            ? root.split('/').filter(Boolean).pop() || null
+            : null;
+          renderDirectories(directories, activeName);
           if (data.fileContent) {
-            renderFileContent(data.fileContent, url);
+            renderFileContent(data.fileContent, root);
           } else {
-            document.getElementById('file-content').innerHTML = '';
-            buildTableOfContents(null);
+            showEmptyFileContent();
           }
           return true;
         })
@@ -825,14 +1046,18 @@
           return false;
         });
     }
-    function renderDirectories(directories) {
+    function renderDirectories(directories, activeName = null) {
       const directoriesList = document.getElementById('directories-list');
       directoriesList.innerHTML = directories.map(directory => {
         const isParent = directory === '..';
         const displayName = isParent ? '.. (go back)' : directory;
+        const isActive = activeName && directory === activeName;
+        const activeClass = isActive
+          ? ' font-semibold text-blue-600 dark:text-blue-400'
+          : '';
         // Escape HTML for data attribute
         const escapedDirectory = directory.replace(/"/g, '&quot;');
-        return `<li class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 text-inherit" data-directory="${escapedDirectory}">${displayName}</li>`;
+        return `<li class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 text-inherit${activeClass}" data-directory="${escapedDirectory}">${displayName}</li>`;
       }).join('');
     }
     function handleDirectoryClick(directory) {
@@ -855,6 +1080,12 @@
             nextRoot = currentRootDirectory ? `${currentRootDirectory}/..` : '..';
           }
         }
+      } else if (viewingFile) {
+        // Sibling of the open file: navigate relative to parent folder
+        const pathParts = currentRootDirectory.split('/').filter(p => p);
+        pathParts.pop();
+        const parent = pathParts.length > 0 ? pathParts.join('/') : '';
+        nextRoot = parent ? `${parent}/${directory}` : directory;
       } else {
         // Navigate into the selected directory
         nextRoot = currentRootDirectory
@@ -876,6 +1107,18 @@
       return directoryItem;
     }
 
+    function assignHeadingIds(contentEl) {
+      if (!contentEl) return;
+      const used = Object.create(null);
+      contentEl.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
+        const base = (h.id && slugify(h.id)) || slugify(h.textContent);
+        let n = used[base] || 0;
+        const id = n === 0 ? base : base + '-' + n;
+        used[base] = n + 1;
+        h.id = id;
+      });
+    }
+
     function buildTableOfContents(contentEl) {
       const tocSidebar = document.getElementById('toc-sidebar');
       if (!tocSidebar) return;
@@ -885,11 +1128,11 @@
         tocSidebar.classList.add('hidden');
         return;
       }
+      assignHeadingIds(contentEl);
       const nav = document.createElement('nav');
       nav.setAttribute('aria-label', 'Table of contents');
       headings.forEach((h) => {
-        const id = h.id || slugify(h.textContent);
-        if (!h.id) h.id = id;
+        const id = h.id;
         const a = document.createElement('a');
         a.href = '#' + id;
         a.textContent = h.textContent;
@@ -898,11 +1141,12 @@
           e.preventDefault();
           document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
           history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
+          closeMobilePanels();
         });
         nav.appendChild(a);
       });
       const title = document.createElement('div');
-      title.className = 'font-semibold mb-2 text-gray-700 dark:text-gray-300';
+      title.className = 'font-medium mb-2 text-gray-700 dark:text-gray-400';
       title.textContent = 'Table of Contents';
       tocSidebar.innerHTML = '';
       tocSidebar.appendChild(title);
@@ -911,20 +1155,94 @@
     }
 
     function slugify(text) {
+      // GitHub-compatible-ish heading slug for in-document #anchors
       return String(text || '')
         .trim()
         .toLowerCase()
+        .replace(/['’]/g, '')
+        .replace(/[^\w\s-]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/[^\w-]+/g, '')
-        .replace(/--+/g, '-')
+        .replace(/-+/g, '-')
         .replace(/^-|-$/g, '') || 'section';
     }
 
-    function renderFileContent(fileContent, url) {
+    function showEmptyFileContent() {
+      const fileContentElement = document.getElementById('file-content');
+      if (!fileContentElement) return;
+      fileContentElement.innerHTML =
+        '<p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">Select a file from the File Explorer to view its contents.</p>';
+      voiceControllerContent = '';
+      buildTableOfContents(null);
+    }
+
+    function resolveRelativePath(filePath, relativeUrl) {
+      if (!relativeUrl || /^(https?:|data:|\/\/)/i.test(relativeUrl)) {
+        return relativeUrl;
+      }
+      const baseParts = filePath.includes('/')
+        ? filePath.slice(0, filePath.lastIndexOf('/')).split('/').filter((s) => s !== '')
+        : [];
+      const resolved = [...baseParts];
+      for (const seg of relativeUrl.split('/')) {
+        if (!seg || seg === '.') continue;
+        if (seg === '..') {
+          if (resolved.length && resolved[resolved.length - 1] !== '..') {
+            resolved.pop();
+          } else {
+            resolved.push('..');
+          }
+        } else {
+          resolved.push(seg);
+        }
+      }
+      return resolved.join('/');
+    }
+
+    function toAssetUrl(href, filePath) {
+      if (!href || /^(https?:|data:|\/\/)/i.test(href)) {
+        return href;
+      }
+      const resolved = resolveRelativePath(filePath, href);
+      return `${API_BASE_URL}/asset?root=${encodeURIComponent(resolved)}`;
+    }
+
+    function toViewerHref(resolvedPath, hash) {
+      let href = window.location.pathname + '?path=' + encodeViewerPath(resolvedPath);
+      if (hash) {
+        href += '#' + String(hash).replace(/^#/, '');
+      }
+      return href;
+    }
+
+    function toInternalLinkHref(href, filePath) {
+      if (!href || /^(https?:|mailto:|tel:|data:|\/\/)/i.test(href)) {
+        return href;
+      }
+      if (href.charAt(0) === '#') {
+        return href;
+      }
+
+      let pathPart = href;
+      let hash = '';
+      const hashIdx = href.indexOf('#');
+      if (hashIdx >= 0) {
+        pathPart = href.slice(0, hashIdx);
+        hash = href.slice(hashIdx + 1);
+      }
+      if (!pathPart) {
+        return hash ? '#' + hash : href;
+      }
+
+      const resolved = pathPart.charAt(0) === '/'
+        ? pathPart.replace(/^\/+/, '')
+        : resolveRelativePath(filePath, pathPart);
+      return toViewerHref(resolved, hash);
+    }
+
+    function renderFileContent(fileContent, filePath) {
       const fileContentElement = document.getElementById('file-content');
       if (!fileContent) {
-        fileContentElement.innerHTML = '';
-        voiceControllerContent = '';
+        showEmptyFileContent();
         return;
       }
 
@@ -964,7 +1282,7 @@
         '.css': 'css'
       };
 
-      const ext = url.includes('.') ? '.' + url.split('.').pop().toLowerCase() : '';
+      const ext = filePath.includes('.') ? '.' + filePath.split('.').pop().toLowerCase() : '';
       const language = codeExtensions[ext];
 
       if (language) {
@@ -978,11 +1296,47 @@
           const langClass = lang ? ` class="language-${lang}"` : '';
           return `<pre><code${langClass}>${escapeHtml(code)}</code></pre>`;
         };
+        renderer.image = function (hrefOrToken, title, text) {
+          let href;
+          let imgTitle;
+          let alt;
+          if (hrefOrToken && typeof hrefOrToken === 'object') {
+            href = hrefOrToken.href;
+            imgTitle = hrefOrToken.title;
+            alt = hrefOrToken.text;
+          } else {
+            href = hrefOrToken;
+            imgTitle = title;
+            alt = text;
+          }
+          const src = toAssetUrl(href, filePath);
+          const titleAttr = imgTitle ? ` title="${escapeHtml(imgTitle)}"` : '';
+          return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt || '')}"${titleAttr}>`;
+        };
+        renderer.link = function (hrefOrToken, title, text) {
+          let href;
+          let linkTitle;
+          let linkText;
+          if (hrefOrToken && typeof hrefOrToken === 'object') {
+            href = hrefOrToken.href;
+            linkTitle = hrefOrToken.title;
+            linkText = hrefOrToken.tokens && this.parser
+              ? this.parser.parseInline(hrefOrToken.tokens)
+              : hrefOrToken.text;
+          } else {
+            href = hrefOrToken;
+            linkTitle = title;
+            linkText = text;
+          }
+          const resolvedHref = toInternalLinkHref(href, filePath);
+          const titleAttr = linkTitle ? ` title="${escapeHtml(linkTitle)}"` : '';
+          const isExternal = /^(https?:|mailto:|tel:|\/\/)/i.test(href || '');
+          const externalAttrs = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
+          return `<a href="${escapeHtml(resolvedHref || '')}"${titleAttr}${externalAttrs}>${linkText}</a>`;
+        };
         marked.setOptions({
           breaks: true,
           gfm: true,
-          headerIds: true,
-          mangle: false,
           renderer: renderer
         });
         fileContentElement.innerHTML = marked.parse(fileContent);
