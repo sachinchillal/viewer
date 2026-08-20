@@ -156,6 +156,90 @@
       margin-left: 3rem;
     }
 
+    .explorer-list {
+      list-style: decimal;
+      list-style-position: inside;
+      margin: 0;
+      padding: 0;
+    }
+
+    .explorer-tree {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .explorer-tree .explorer-tree {
+      padding-left: 0.75rem;
+    }
+
+    .explorer-tree-item {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      max-width: 100%;
+      padding: 0.15rem 0;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    .explorer-tree-item:hover .explorer-tree-label {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+
+    html.dark .explorer-tree-item:hover .explorer-tree-label {
+      color: #60a5fa;
+    }
+
+    .explorer-tree-item.is-active .explorer-tree-label {
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    html.dark .explorer-tree-item.is-active .explorer-tree-label {
+      color: #60a5fa;
+    }
+
+    .explorer-tree-chevron {
+      flex-shrink: 0;
+      width: 1rem;
+      height: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      line-height: 1;
+      color: #6b7280;
+      user-select: none;
+    }
+
+    html.dark .explorer-tree-chevron {
+      color: #9ca3af;
+    }
+
+    .explorer-tree-spacer {
+      flex-shrink: 0;
+      width: 1rem;
+    }
+
+    .explorer-tree-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .explorer-mode-active {
+      background-color: #e5e7eb !important;
+      border-color: #9ca3af !important;
+    }
+
+    html.dark .explorer-mode-active {
+      background-color: #374151 !important;
+      border-color: #6b7280 !important;
+    }
+
 
     .markdown-body {
       box-sizing: border-box;
@@ -297,6 +381,10 @@
         color: #000 !important;
       }
 
+      #directories-list .explorer-tree-item {
+        color: #000 !important;
+      }
+
       p,
       hr,
       h1,
@@ -376,11 +464,41 @@
         </div>
       </main>
       <aside id="controls-sidebar"
-        class="panel-drawer panel-drawer-right right-sidebar no-print flex flex-col fixed inset-y-0 right-0 z-50 w-[min(85vw,18rem)] p-4 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-lg lg:static lg:inset-auto lg:z-auto lg:w-48 lg:shrink-0 lg:p-0 lg:shadow-none lg:border-0">
+        class="panel-drawer panel-drawer-right right-sidebar no-print flex flex-col fixed inset-y-0 right-0 z-50 w-[min(85vw,18rem)] p-4 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-lg lg:static lg:inset-auto lg:z-auto lg:w-56 lg:shrink-0 lg:p-0 lg:shadow-none lg:border-0">
         <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File
           Explorer</label>
+        <div class="mt-1 mb-1 flex flex-wrap gap-1 no-print" role="toolbar" aria-label="File explorer controls">
+          <button type="button" id="btn-explorer-list" title="List view" aria-label="List view"
+            class="p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+              aria-hidden="true">
+              <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <button type="button" id="btn-explorer-tree" title="Tree view" aria-label="Tree view"
+            class="p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+              aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h6M4 12h6M4 18h6M14 6v12M14 12h6" />
+            </svg>
+          </button>
+          <button type="button" id="btn-expand-all" title="Expand all" aria-label="Expand all"
+            class="p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors hidden">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+              aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 8l8-5 8 5M4 16l8 5 8-5M4 12h16" />
+            </svg>
+          </button>
+          <button type="button" id="btn-collapse-all" title="Collapse all" aria-label="Collapse all"
+            class="p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors hidden">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+              aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 8l8 5 8-5M4 16l8-5 8 5" />
+            </svg>
+          </button>
+        </div>
         <p id="explorer-error" class="mt-1 text-sm text-red-600 dark:text-red-400 hidden no-print" role="alert"></p>
-        <ol id="directories-list" class="list-decimal list-inside no-print"></ol>
+        <div id="directories-list" class="no-print overflow-x-auto"></div>
         <i class="mt-auto"></i>
 
         <div class="flex flex-col gap-2 mt-2">
@@ -500,6 +618,12 @@
     let currentRootDirectory = '';
     let viewingFile = false;
     let closeMobilePanels = () => { };
+    const EXPLORER_VIEW_KEY = 'explorerViewMode';
+    let explorerViewMode = localStorage.getItem(EXPLORER_VIEW_KEY) === 'tree' ? 'tree' : 'list';
+    let treeData = [];
+    let treeBase = '';
+    let expandedPaths = new Set();
+    let activeTreePath = null;
 
     function clampSpeechRate(n) {
       const x = Number(n);
@@ -521,14 +645,47 @@
       const pathFromUrl = urlParams.get('path') || '';
       currentRootDirectory = pathFromUrl;
 
+      updateExplorerModeUI();
       getDirectories(currentRootDirectory);
 
       // Set up event delegation for click handling
       const directoriesList = document.getElementById('directories-list');
       directoriesList.addEventListener('click', (e) => {
-        if (e.target.tagName === 'LI' && e.target.dataset.directory) {
-          handleDirectoryClick(e.target.dataset.directory);
+        const treeToggle = e.target.closest('[data-tree-toggle]');
+        if (treeToggle) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleTreePath(treeToggle.getAttribute('data-tree-toggle'));
+          return;
         }
+        const treeItem = e.target.closest('[data-tree-path]');
+        if (treeItem) {
+          const path = treeItem.getAttribute('data-tree-path');
+          const type = treeItem.getAttribute('data-tree-type');
+          if (type === 'directory') {
+            toggleTreePath(path);
+          } else {
+            handleTreeFileClick(path);
+          }
+          return;
+        }
+        const listItem = e.target.closest('[data-directory]');
+        if (listItem && listItem.dataset.directory) {
+          handleDirectoryClick(listItem.dataset.directory);
+        }
+      });
+
+      document.getElementById('btn-explorer-list')?.addEventListener('click', () => {
+        setExplorerViewMode('list');
+      });
+      document.getElementById('btn-explorer-tree')?.addEventListener('click', () => {
+        setExplorerViewMode('tree');
+      });
+      document.getElementById('btn-expand-all')?.addEventListener('click', () => {
+        expandAllTree();
+      });
+      document.getElementById('btn-collapse-all')?.addEventListener('click', () => {
+        collapseAllTree();
       });
 
       const fileContentElement = document.getElementById('file-content');
@@ -1013,11 +1170,125 @@
       if (data?.error) {
         return data.error;
       }
+      if (data?.message) {
+        return data.message;
+      }
       return `Request failed (${status})`;
     }
 
-    function getDirectories(root = '') {
-      const url = root ? `${API_BASE_URL}/directories?root=${encodeURIComponent(root)}` : `${API_BASE_URL}/directories`;
+    function updateExplorerModeUI() {
+      const listBtn = document.getElementById('btn-explorer-list');
+      const treeBtn = document.getElementById('btn-explorer-tree');
+      const expandBtn = document.getElementById('btn-expand-all');
+      const collapseBtn = document.getElementById('btn-collapse-all');
+      const isTree = explorerViewMode === 'tree';
+      if (listBtn) {
+        listBtn.classList.toggle('explorer-mode-active', explorerViewMode === 'list');
+        listBtn.setAttribute('aria-pressed', explorerViewMode === 'list' ? 'true' : 'false');
+      }
+      if (treeBtn) {
+        treeBtn.classList.toggle('explorer-mode-active', isTree);
+        treeBtn.setAttribute('aria-pressed', isTree ? 'true' : 'false');
+      }
+      if (expandBtn) {
+        expandBtn.classList.toggle('hidden', !isTree);
+      }
+      if (collapseBtn) {
+        collapseBtn.classList.toggle('hidden', !isTree);
+      }
+    }
+
+    function setExplorerViewMode(mode) {
+      if (mode !== 'list' && mode !== 'tree') return;
+      if (explorerViewMode === mode) return;
+      explorerViewMode = mode;
+      localStorage.setItem(EXPLORER_VIEW_KEY, mode);
+      updateExplorerModeUI();
+      getDirectories(currentRootDirectory);
+    }
+
+    function escapeHtmlAttr(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function escapeHtmlText(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function joinTreePath(prefix, name) {
+      return prefix ? `${prefix}/${name}` : name;
+    }
+
+    function collectDirectoryPaths(nodes, prefix, into) {
+      if (!Array.isArray(nodes)) return;
+      for (const node of nodes) {
+        const nodePath = joinTreePath(prefix, node.name);
+        if (node.type === 'directory') {
+          into.add(nodePath);
+          collectDirectoryPaths(node.children, nodePath, into);
+        }
+      }
+    }
+
+    function expandAncestorsOf(filePath) {
+      const parts = String(filePath || '').split('/').filter(Boolean);
+      let acc = '';
+      for (let i = 0; i < parts.length - 1; i++) {
+        acc = acc ? `${acc}/${parts[i]}` : parts[i];
+        expandedPaths.add(acc);
+      }
+    }
+
+    function expandAllTree() {
+      const all = new Set();
+      collectDirectoryPaths(treeData, treeBase, all);
+      expandedPaths = all;
+      renderTree(treeData, activeTreePath);
+    }
+
+    function collapseAllTree() {
+      expandedPaths = new Set();
+      renderTree(treeData, activeTreePath);
+    }
+
+    function toggleTreePath(path) {
+      if (!path) return;
+      if (expandedPaths.has(path)) {
+        expandedPaths.delete(path);
+      } else {
+        expandedPaths.add(path);
+      }
+      renderTree(treeData, activeTreePath);
+    }
+
+    function handleTreeFileClick(path) {
+      getDirectories(path, { preserveTree: true }).then(ok => {
+        if (ok) {
+          currentRootDirectory = path;
+          updateUrl(currentRootDirectory);
+        }
+      });
+    }
+
+    function getDirectories(root = '', options = {}) {
+      const preserveTree = Boolean(options.preserveTree)
+        && explorerViewMode === 'tree'
+        && treeData.length > 0;
+      const wantTree = explorerViewMode === 'tree' && !preserveTree;
+      let url = `${API_BASE_URL}/directories`;
+      const params = [];
+      if (root) params.push(`root=${encodeURIComponent(root)}`);
+      if (wantTree) params.push('tree=1');
+      if (params.length) url += '?' + params.join('&');
+
       return fetch(url, { cache: 'no-store' })
         .then(async response => {
           const data = await response.json();
@@ -1027,12 +1298,27 @@
           }
           showExplorerError('');
           viewingFile = Boolean(data.fileContent);
-          const list = Array.isArray(data.list) ? data.list : [];
-          const directories = ['..', ...list];
-          const activeName = viewingFile
-            ? root.split('/').filter(Boolean).pop() || null
-            : null;
-          renderDirectories(directories, activeName);
+
+          if (explorerViewMode === 'tree') {
+            const keepTree = preserveTree && viewingFile;
+            if (!keepTree) {
+              treeData = Array.isArray(data.tree) ? data.tree : [];
+              treeBase = typeof data.treeBase === 'string' ? data.treeBase : '';
+            }
+            activeTreePath = viewingFile ? root : null;
+            if (activeTreePath) {
+              expandAncestorsOf(activeTreePath);
+            }
+            renderTree(treeData, activeTreePath);
+          } else {
+            const list = Array.isArray(data.list) ? data.list : [];
+            const directories = ['..', ...list];
+            const activeName = viewingFile
+              ? root.split('/').filter(Boolean).pop() || null
+              : null;
+            renderDirectories(directories, activeName);
+          }
+
           if (data.fileContent) {
             renderFileContent(data.fileContent, root);
           } else {
@@ -1046,20 +1332,57 @@
           return false;
         });
     }
+
     function renderDirectories(directories, activeName = null) {
       const directoriesList = document.getElementById('directories-list');
-      directoriesList.innerHTML = directories.map(directory => {
+      const items = directories.map(directory => {
         const isParent = directory === '..';
         const displayName = isParent ? '.. (go back)' : directory;
         const isActive = activeName && directory === activeName;
         const activeClass = isActive
           ? ' font-semibold text-blue-600 dark:text-blue-400'
           : '';
-        // Escape HTML for data attribute
-        const escapedDirectory = directory.replace(/"/g, '&quot;');
-        return `<li class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 text-inherit${activeClass}" data-directory="${escapedDirectory}">${displayName}</li>`;
+        const escapedDirectory = escapeHtmlAttr(directory);
+        return `<li class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 text-inherit${activeClass}" data-directory="${escapedDirectory}">${escapeHtmlText(displayName)}</li>`;
+      }).join('');
+      directoriesList.innerHTML = `<ol class="explorer-list">${items}</ol>`;
+    }
+
+    function renderTreeNodes(nodes, prefix, activePath) {
+      if (!Array.isArray(nodes) || nodes.length === 0) return '';
+      return nodes.map(node => {
+        const nodePath = joinTreePath(prefix, node.name);
+        const isDir = node.type === 'directory';
+        const isExpanded = isDir && expandedPaths.has(nodePath);
+        const isActive = activePath && nodePath === activePath;
+        const activeClass = isActive ? ' is-active' : '';
+        const chevron = isDir
+          ? `<span class="explorer-tree-chevron" data-tree-toggle="${escapeHtmlAttr(nodePath)}" aria-hidden="true">${isExpanded ? '▼' : '▶'}</span>`
+          : '<span class="explorer-tree-spacer" aria-hidden="true"></span>';
+        const childrenHtml = isDir && isExpanded
+          ? `<ul class="explorer-tree">${renderTreeNodes(node.children || [], nodePath, activePath)}</ul>`
+          : '';
+        return `<li>
+          <div class="explorer-tree-item${activeClass}" data-tree-path="${escapeHtmlAttr(nodePath)}" data-tree-type="${isDir ? 'directory' : 'file'}" title="${escapeHtmlAttr(node.name)}">
+            ${chevron}
+            <span class="explorer-tree-label">${escapeHtmlText(node.name)}</span>
+          </div>
+          ${childrenHtml}
+        </li>`;
       }).join('');
     }
+
+    function renderTree(nodes, activePath = null) {
+      const directoriesList = document.getElementById('directories-list');
+      const parentRow = `<li>
+        <div class="explorer-tree-item" data-directory=".." title="Go back">
+          <span class="explorer-tree-spacer" aria-hidden="true"></span>
+          <span class="explorer-tree-label">.. (go back)</span>
+        </div>
+      </li>`;
+      directoriesList.innerHTML = `<ul class="explorer-tree">${parentRow}${renderTreeNodes(nodes, treeBase, activePath)}</ul>`;
+    }
+
     function handleDirectoryClick(directory) {
       let nextRoot;
       if (directory === '..') {

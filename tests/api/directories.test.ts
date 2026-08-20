@@ -239,4 +239,129 @@ describe(`GET ${API_BASE_URL}directories`, () => {
       expect(res.body.message).toBe('Incorrect path');
     });
   });
+
+  describe('with tree=1', () => {
+    it('returns nested tree from the base path', async () => {
+      const res = await request(app).get(`${API_BASE_URL}directories?tree=1`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.list).toEqual([]);
+      expect(res.body.treeBase).toBe('');
+      expect(res.body.fileContent).toBe('');
+      expect(res.body.message).toBe('');
+      expect(res.body.tree).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: TestDataDirectories.folder,
+            type: 'directory',
+            children: expect.arrayContaining([
+              expect.objectContaining({
+                name: 'sample.md',
+                type: 'file',
+              }),
+              expect.objectContaining({
+                name: 'nested-folder',
+                type: 'directory',
+                children: expect.arrayContaining([
+                  expect.objectContaining({ name: '1-file.md', type: 'file' }),
+                ]),
+              }),
+              expect.objectContaining({
+                name: 'nested-folder-2',
+                type: 'directory',
+                children: expect.arrayContaining([
+                  expect.objectContaining({
+                    name: 'nested-folder-3',
+                    type: 'directory',
+                    // Depth 4 (nested-3.md) is beyond default MAX_TREE_DEPTH=3
+                    children: [],
+                  }),
+                ]),
+              }),
+            ]),
+          }),
+        ])
+      );
+    });
+
+    it('stops nesting at MAX_TREE_DEPTH', async () => {
+      const res = await request(app).get(`${API_BASE_URL}directories?tree=1`);
+
+      const testFolder = res.body.tree.find(
+        (n: { name: string }) => n.name === TestDataDirectories.folder
+      );
+      const nested2 = testFolder?.children?.find(
+        (n: { name: string }) => n.name === 'nested-folder-2'
+      );
+      const nested3 = nested2?.children?.find(
+        (n: { name: string }) => n.name === 'nested-folder-3'
+      );
+
+      expect(nested3).toEqual(
+        expect.objectContaining({ name: 'nested-folder-3', type: 'directory', children: [] })
+      );
+      expect(nested3?.children).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'nested-3.md', type: 'file' }),
+        ])
+      );
+    });
+
+    it('returns file content and parent-rooted tree when opening a file', async () => {
+      const file = TestDataDirectories.files[0];
+      const root = `${TestDataDirectories.folder}/${file}`;
+      const res = await request(app).get(
+        `${API_BASE_URL}directories?root=${encodeURIComponent(root)}&tree=1`
+      );
+
+      const dirNames = TestDataDirectories.children.map((child) => child.folder);
+      const fileNames = TestDataDirectories.files;
+
+      expect(res.status).toBe(200);
+      expect(res.body.fileContent).toBe(`# ${file}\n`);
+      expect(res.body.list).toEqual([]);
+      expect(res.body.treeBase).toBe(TestDataDirectories.folder);
+      expect(res.body.message).toBe('');
+      expect(res.body.tree).toEqual(
+        expect.arrayContaining([
+          ...fileNames.map((name) => expect.objectContaining({ name, type: 'file' })),
+          ...dirNames.map((name) =>
+            expect.objectContaining({ name, type: 'directory' })
+          ),
+        ])
+      );
+      expect(res.body.tree.find((n: { name: string }) => n.name === TestDataDirectories.folder)).toBeUndefined();
+    });
+
+    it('returns tree rooted at directory when root is a directory', async () => {
+      const root = TestDataDirectories.folder;
+      const res = await request(app).get(
+        `${API_BASE_URL}directories?root=${encodeURIComponent(root)}&tree=1`
+      );
+
+      const dirNames = TestDataDirectories.children.map((child) => child.folder);
+      const fileNames = TestDataDirectories.files;
+
+      expect(res.status).toBe(200);
+      expect(res.body.list).toEqual([]);
+      expect(res.body.treeBase).toBe(TestDataDirectories.folder);
+      expect(res.body.fileContent).toBe('');
+      expect(res.body.tree).toEqual(
+        expect.arrayContaining([
+          ...fileNames.map((name) => expect.objectContaining({ name, type: 'file' })),
+          expect.objectContaining({
+            name: 'nested-folder',
+            type: 'directory',
+            children: expect.arrayContaining([
+              expect.objectContaining({ name: '1-file.md', type: 'file' }),
+            ]),
+          }),
+          ...dirNames
+            .filter((name) => name !== 'nested-folder')
+            .map((name) => expect.objectContaining({ name, type: 'directory' })),
+        ])
+      );
+      expect(res.body.tree.find((n: { name: string }) => n.name === TestDataDirectories.folder)).toBeUndefined();
+    });
+  });
 });

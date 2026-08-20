@@ -12,7 +12,10 @@ const PORT = process.env.PORT || 3000;
 const ALLOWED_FILE_TYPES = process.env.ALLOWED_FILE_TYPES || "md,java";
 // const MAX_PARENT_DIRECTORY = "*"; // all the directories will be shown
 const MAX_PARENT_DIRECTORY = process.env.MAX_PARENT_DIRECTORY || "private"; // all the directories will be shown with in the private directory
-
+// How many directory levels to include in tree responses (1 = immediate children only)
+const parsedTreeDepth = Number.parseInt(process.env.MAX_TREE_DEPTH || '3', 10);
+const MAX_TREE_DEPTH =
+  Number.isFinite(parsedTreeDepth) && parsedTreeDepth > 0 ? parsedTreeDepth : 3;
 
 const app = express();
 const apiRouter = Router();
@@ -80,6 +83,12 @@ apiRouter.get('/', (req: Request, res: Response) => {
 apiRouter.get('/ping', (req: Request, res: Response) => {
   res.json({ message: 'pong' });
 });
+type TreeNode = {
+  name: string;
+  type: 'file' | 'directory';
+  children?: TreeNode[];
+};
+
 const listDirectory = (dirPath: string): string[] => {
   // sort the list alphabetically with numeric prefix
   const list = fs.readdirSync(dirPath);
@@ -87,16 +96,70 @@ const listDirectory = (dirPath: string): string[] => {
   return list;
 };
 
+const buildDirectoryTree = (dirPath: string, depth = 1): TreeNode[] => {
+  if (depth > MAX_TREE_DEPTH) {
+    return [];
+  }
+
+  let names: string[];
+  try {
+    names = listDirectory(dirPath);
+  } catch {
+    return [];
+  }
+
+  const nodes: TreeNode[] = [];
+  for (const name of names) {
+    const fullPath = path.join(dirPath, name);
+    if (MAX_PARENT_DIRECTORY !== '*' && !isPathInsideBase(fullPath)) {
+      continue;
+    }
+    try {
+      const stat = fs.lstatSync(fullPath);
+      if (stat.isSymbolicLink()) {
+        continue;
+      }
+      if (stat.isDirectory()) {
+        nodes.push({
+          name,
+          type: 'directory',
+          children: buildDirectoryTree(fullPath, depth + 1),
+        });
+      } else if (stat.isFile()) {
+        nodes.push({ name, type: 'file' });
+      }
+    } catch {
+      // Skip inaccessible entries
+    }
+  }
+  return nodes;
+};
+
+/** Relative path from ALLOWED_BASE_PATH using forward slashes; '' at base. */
+const toTreeBase = (dirPath: string): string => {
+  const relative = path.relative(ALLOWED_BASE_PATH, dirPath);
+  if (!relative || relative === '.') return '';
+  return relative.split(path.sep).join('/');
+};
+
 apiRouter.get('/directories', async (req: Request, res: Response) => {
   const root = req.query.root as string;
+  const wantTree = req.query.tree === '1' || req.query.tree === 'true';
 
   const response = {
     list: [] as string[],
+    tree: [] as TreeNode[],
+    treeBase: '' as string,
     fileContent: '' as string,
     message: '' as string
   }
   if (!root) {
-    response.list = listDirectory(ALLOWED_BASE_PATH);
+    if (wantTree) {
+      response.tree = buildDirectoryTree(ALLOWED_BASE_PATH);
+      response.treeBase = '';
+    } else {
+      response.list = listDirectory(ALLOWED_BASE_PATH);
+    }
     res.json(response);
     return;
   }
@@ -122,14 +185,24 @@ apiRouter.get('/directories', async (req: Request, res: Response) => {
     response.fileContent = fs.readFileSync(resolvedPath, 'utf8');
     // Always show siblings in the parent folder while viewing a file
     const parentDir = path.dirname(resolvedPath);
-    response.list = listDirectory(parentDir);
+    if (wantTree) {
+      response.tree = buildDirectoryTree(parentDir);
+      response.treeBase = toTreeBase(parentDir);
+    } else {
+      response.list = listDirectory(parentDir);
+    }
     res.json(response);
     return;
   }
 
   const stat = fs.statSync(resolvedPath);
   if (stat.isDirectory()) {
-    response.list = listDirectory(resolvedPath);
+    if (wantTree) {
+      response.tree = buildDirectoryTree(resolvedPath);
+      response.treeBase = toTreeBase(resolvedPath);
+    } else {
+      response.list = listDirectory(resolvedPath);
+    }
     res.json(response);
     return;
   }
