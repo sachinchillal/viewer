@@ -5,6 +5,14 @@ import express, { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { access, constants, realpath } from 'fs/promises';
+import { emptyPostsResponse, splitMarkdownByH2 } from './posts';
+import {
+  emptyProgressActionResponse,
+  emptyProgressFileResponse,
+  getProgressForFile,
+  markSection,
+  unmarkSection,
+} from './postsProgress';
 
 // Constants
 const PORT = process.env.PORT || 3000;
@@ -18,6 +26,7 @@ const MAX_TREE_DEPTH =
   Number.isFinite(parsedTreeDepth) && parsedTreeDepth > 0 ? parsedTreeDepth : 3;
 
 const app = express();
+app.use(express.json());
 const apiRouter = Router();
 
 
@@ -215,6 +224,115 @@ apiRouter.get('/directories', async (req: Request, res: Response) => {
 
   response.message = 'It is neither file nor directory';
   res.status(404).json(response);
+});
+
+apiRouter.get('/posts', async (req: Request, res: Response) => {
+  const root = req.query.root as string;
+  if (!root) {
+    res.status(400).json(emptyPostsResponse('Missing root'));
+    return;
+  }
+
+  const resolvedPath = await resolveSafePath(root);
+  if (!resolvedPath) {
+    res.status(400).json(emptyPostsResponse('Incorrect path'));
+    return;
+  }
+
+  const exists = await isFileOrDirectoryExists(resolvedPath);
+  if (!exists) {
+    res.status(404).json(emptyPostsResponse('File or directory not found'));
+    return;
+  }
+
+  const extension = getFileExtension(resolvedPath);
+  if (extension !== 'md') {
+    res.status(400).json(emptyPostsResponse('Only markdown files are supported'));
+    return;
+  }
+
+  const stat = fs.statSync(resolvedPath);
+  if (!stat.isFile()) {
+    res.status(404).json(emptyPostsResponse('File or directory not found'));
+    return;
+  }
+
+  const content = fs.readFileSync(resolvedPath, 'utf8');
+  const { preamble, sections } = splitMarkdownByH2(content);
+
+  res.json({
+    file: path.basename(resolvedPath),
+    root,
+    preamble,
+    sections,
+    message: '',
+  });
+});
+
+const validateMarkdownRoot = async (root: string): Promise<{ ok: true } | { ok: false; status: number; message: string }> => {
+  if (!root) {
+    return { ok: false, status: 400, message: 'Missing root' };
+  }
+
+  const resolvedPath = await resolveSafePath(root);
+  if (!resolvedPath) {
+    return { ok: false, status: 400, message: 'Incorrect path' };
+  }
+
+  const exists = await isFileOrDirectoryExists(resolvedPath);
+  if (!exists) {
+    return { ok: false, status: 404, message: 'File or directory not found' };
+  }
+
+  const extension = getFileExtension(resolvedPath);
+  if (extension !== 'md') {
+    return { ok: false, status: 400, message: 'Only markdown files are supported' };
+  }
+
+  const stat = fs.statSync(resolvedPath);
+  if (!stat.isFile()) {
+    return { ok: false, status: 404, message: 'File or directory not found' };
+  }
+
+  return { ok: true };
+};
+
+apiRouter.get('/posts/progress', async (req: Request, res: Response) => {
+  const root = req.query.root as string;
+  const validation = await validateMarkdownRoot(root);
+  if (!validation.ok) {
+    res.status(validation.status).json(emptyProgressFileResponse(validation.message, root || ''));
+    return;
+  }
+
+  res.json({
+    root,
+    sections: getProgressForFile(root),
+    message: '',
+  });
+});
+
+apiRouter.post('/posts/progress', async (req: Request, res: Response) => {
+  const root = typeof req.body?.root === 'string' ? req.body.root : '';
+  const sectionId = req.body?.sectionId != null ? String(req.body.sectionId) : '';
+  const action = typeof req.body?.action === 'string' ? req.body.action : '';
+
+  if (!root || !sectionId || (action !== 'mark' && action !== 'unmark')) {
+    res.status(400).json(emptyProgressActionResponse('Missing or invalid root, sectionId, or action', root, sectionId));
+    return;
+  }
+
+  const validation = await validateMarkdownRoot(root);
+  if (!validation.ok) {
+    res.status(validation.status).json(emptyProgressActionResponse(validation.message, root, sectionId));
+    return;
+  }
+
+  const result = action === 'mark'
+    ? markSection(root, sectionId)
+    : unmarkSection(root, sectionId);
+
+  res.json(result);
 });
 
 apiRouter.get('/asset', async (req: Request, res: Response) => {

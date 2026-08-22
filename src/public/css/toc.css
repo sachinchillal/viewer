@@ -1,0 +1,48 @@
+@media (min-width: 1024px) {
+  .toc-sidebar {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    font-size: 12px;
+  }
+}
+
+.toc-sidebar a {
+  display: block;
+  padding: 0.25rem 0;
+  color: inherit;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  padding-left: 0.5rem;
+  margin-left: 0;
+  font-size: 12px;
+}
+
+.toc-sidebar a:hover {
+  color: #2563eb;
+}
+
+html.dark .toc-sidebar a:hover {
+  color: #60a5fa;
+}
+
+.toc-sidebar .toc-h2 {
+  margin-left: 0;
+}
+
+.toc-sidebar .toc-h3 {
+  margin-left: 0.75rem;
+}
+
+.toc-sidebar .toc-h4 {
+  margin-left: 1.5rem;
+}
+
+.toc-sidebar .toc-h5 {
+  margin-left: 2.25rem;
+}
+
+.toc-sidebar .toc-h6 {
+  margin-left: 3rem;
+}
