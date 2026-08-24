@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/toc.css">
   <link rel="stylesheet" href="css/explorer.css">
+  <link rel="stylesheet" href="css/voice.css">
   <style>
     /* Ensure html/body background follows theme (Tailwind class applies on html) */
     html {
@@ -161,61 +162,6 @@
       color: #009000;
     }
 
-    /* Per-heading play control: appears on heading hover / focus-within */
-    .markdown-body h1.md-heading-with-play,
-    .markdown-body h2.md-heading-with-play,
-    .markdown-body h3.md-heading-with-play,
-    .markdown-body h4.md-heading-with-play,
-    .markdown-body h5.md-heading-with-play,
-    .markdown-body h6.md-heading-with-play {
-      position: relative;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.35rem 0.5rem;
-      width: 100%;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    .markdown-body .md-heading-text {
-      min-width: 0;
-      flex: 1 1 auto;
-    }
-
-    .markdown-body .md-heading-actions {
-      flex-shrink: 0;
-      display: flex;
-      align-items: flex-start;
-      gap: 0.25rem;
-      margin-top: 0.15em;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-    }
-
-    .markdown-body h1.md-heading-with-play:hover .md-heading-actions,
-    .markdown-body h2.md-heading-with-play:hover .md-heading-actions,
-    .markdown-body h3.md-heading-with-play:hover .md-heading-actions,
-    .markdown-body h4.md-heading-with-play:hover .md-heading-actions,
-    .markdown-body h5.md-heading-with-play:hover .md-heading-actions,
-    .markdown-body h6.md-heading-with-play:hover .md-heading-actions,
-    .markdown-body h1.md-heading-with-play:focus-within .md-heading-actions,
-    .markdown-body h2.md-heading-with-play:focus-within .md-heading-actions,
-    .markdown-body h3.md-heading-with-play:focus-within .md-heading-actions,
-    .markdown-body h4.md-heading-with-play:focus-within .md-heading-actions,
-    .markdown-body h5.md-heading-with-play:focus-within .md-heading-actions,
-    .markdown-body h6.md-heading-with-play:focus-within .md-heading-actions {
-      opacity: 1;
-    }
-
-    /* Touch / no-hover: keep control discoverable (primary interaction is still tap) */
-    @media (hover: none) {
-      .markdown-body .md-heading-actions {
-        opacity: 0.55;
-      }
-    }
-
     @media print {
       /* @media screen,
     print { */
@@ -312,10 +258,14 @@
       <main class="flex-1 min-w-0 w-full">
         <header id="mobile-header"
           class="no-print lg:hidden sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 mb-2 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-700 bg-inherit">
-          <a href="./" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
-            <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
-            <span class="text-xl font-bold leading-none">Viewer</span>
-          </a>
+          <div class="flex items-center gap-3 min-w-0">
+            <a href="./" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
+              <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
+              <span class="text-xl font-bold leading-none">Viewer</span>
+            </a>
+            <a href="posts/"
+              class="posts-page-link text-blue-600 dark:text-blue-400 text-sm font-medium min-h-11 inline-flex items-center shrink-0">Posts</a>
+          </div>
           <div class="flex items-center gap-1 shrink-0">
             <button type="button" id="btn-mobile-toc" aria-expanded="false" aria-controls="toc-sidebar"
               aria-label="Open table of contents"
@@ -330,6 +280,7 @@
             <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
             <h1 class="text-2xl font-bold leading-none m-0">Viewer</h1>
           </a>
+          <a href="posts/" class="posts-page-link text-blue-600 dark:text-blue-400 text-sm font-medium">Posts</a>
         </div>
         <div id="file-content" class="markdown-body mt-4 lg:mt-6">
           <p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">
@@ -346,60 +297,7 @@
           <div id="tag-toggle-controls" class="mt-1 flex flex-col gap-1"></div>
         </div>
         <i class="mt-auto"></i>
-        <div id="voice-controller" class="mt-6 no-print flex flex-wrap items-center gap-2 justify-start">
-          <label for="voice-select" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">Voice</label>
-          <select id="voice-select"
-            class="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-colors"
-            style="width: stretch;">
-            <option value="">Select voice…</option>
-            <option value="default">Default</option>
-          </select>
-          <label
-            class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
-            <input type="checkbox" id="skip-code-blocks"
-              class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
-            <span>Skip code blocks</span>
-          </label>
-          <div class="w-full flex flex-col gap-1.5 mt-1">
-            <div class="flex items-center justify-between gap-2">
-              <label for="speech-rate" class="font-medium text-gray-700 dark:text-gray-400 text-xs shrink-0">Speech
-                rate</label>
-              <span id="speech-rate-value"
-                class="text-xs tabular-nums text-gray-600 dark:text-gray-400 shrink-0">1.0×</span>
-            </div>
-            <input type="range" id="speech-rate" min="0.5" max="2" step="0.1" value="1"
-              class="w-full h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-600 accent-blue-600 dark:accent-blue-500 cursor-pointer">
-            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 leading-none">
-              <span>Slower</span>
-              <span>Faster</span>
-            </div>
-          </div>
-          <button type="button" id="btn-play" title="Play"
-            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5v14l11-7L8 5z" />
-            </svg>
-          </button>
-          <button type="button" id="btn-pause" title="Pause"
-            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-            </svg>
-          </button>
-          <button type="button" id="btn-resume" title="Resume"
-            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5v14l11-7L8 5z" />
-              <circle cx="18" cy="4" r="2" />
-            </svg>
-          </button>
-          <button type="button" id="btn-stop" title="Stop"
-            class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6h12v12H6z" />
-            </svg>
-          </button>
-        </div>
+        <div id="voice-mount"></div>
       </aside>
     </div>
   </div>
@@ -407,11 +305,16 @@
   <script src="js/settings.js"></script>
   <script src="js/toc.js"></script>
   <script src="js/explorer.js"></script>
+  <script src="js/voice.js"></script>
   <script>
     const APP_BASE_PATH = window.location.pathname
       .replace(/\/index\.html$/, '')
       .replace(/\/+$/, '');
     const API_BASE_URL = `${APP_BASE_PATH}/api`;
+    const POSTS_PAGE_URL = `${APP_BASE_PATH}/posts/`;
+    document.querySelectorAll('.posts-page-link').forEach((link) => {
+      link.setAttribute('href', POSTS_PAGE_URL);
+    });
     const TAGS_TO_TOGGLE = [
       {
         tag: 'blockquote',
@@ -420,30 +323,8 @@
     ];
     const TAG_TOGGLE_STORAGE_KEY = 'viewer-tag-toggles';
     const tagToggleContainer = document.getElementById('tag-toggle-controls');
-    // Voice
-    const VOICE_STORAGE_KEY = 'viewer-voice';
-    const SKIP_CODE_BLOCKS_KEY = 'viewer-skip-code-blocks';
-    const SPEECH_RATE_KEY = 'viewer-speech-rate';
-    const SPEECH_RATE_MIN = 0.5;
-    const SPEECH_RATE_MAX = 2;
-    const voiceSelect = document.getElementById('voice-select');
-    const speechRateInput = document.getElementById('speech-rate');
-    const speechRateValueEl = document.getElementById('speech-rate-value');
-    const btnPlay = document.getElementById('btn-play');
-    const btnPause = document.getElementById('btn-pause');
-    const btnResume = document.getElementById('btn-resume');
-    const btnStop = document.getElementById('btn-stop');
-    const skipCodeBlocksCheckbox = document.getElementById('skip-code-blocks');
-    const codeblockAlternativeText = "See the code block for more details.";
-    let voiceControllerContent = "";
 
     let closeMobilePanels = () => { };
-
-    function clampSpeechRate(n) {
-      const x = Number(n);
-      if (!Number.isFinite(x)) return 1;
-      return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
-    }
 
     if (window.ViewerExplorer) {
       window.ViewerExplorer.init({
@@ -463,8 +344,10 @@
         closeMobilePanels: () => closeMobilePanels()
       });
     }
+    if (window.ViewerVoice) {
+      window.ViewerVoice.init({ contentRootSelector: '#file-content' });
+    }
     init();
-    initVoiceController();
     initTagToggles();
     initMobilePanels();
 
@@ -662,221 +545,6 @@
         });
       });
     }
-    function initVoiceController() {
-
-      function populateVoices() {
-        const voices = speechSynthesis.getVoices();
-        const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-        voiceSelect.innerHTML = '<option value="">Select voice…</option>' +
-          englishVoices.map(v => `<option value="${escapeHtmlAttr(v.name)}">${escapeHtmlAttr(v.name)} (${escapeHtmlAttr(v.lang)})</option>`).join('');
-
-        const saved = localStorage.getItem(VOICE_STORAGE_KEY);
-        if (saved && [...voiceSelect.options].some(o => o.value === saved)) {
-          voiceSelect.value = saved;
-        }
-      }
-
-      function escapeHtmlAttr(s) {
-        return String(s)
-          .replace(/&/g, '&amp;')
-          .replace(/"/g, '&quot;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
-      }
-
-      if (speechSynthesis.getVoices().length) {
-        populateVoices();
-      } else {
-        speechSynthesis.addEventListener('voiceschanged', populateVoices);
-      }
-
-      voiceSelect.addEventListener('change', () => {
-        const value = voiceSelect.value;
-        if (value) localStorage.setItem(VOICE_STORAGE_KEY, value);
-      });
-
-      const savedSkipCode = localStorage.getItem(SKIP_CODE_BLOCKS_KEY);
-      if (skipCodeBlocksCheckbox) {
-        skipCodeBlocksCheckbox.checked = savedSkipCode === 'true';
-        skipCodeBlocksCheckbox.addEventListener('change', () => {
-          localStorage.setItem(SKIP_CODE_BLOCKS_KEY, String(skipCodeBlocksCheckbox.checked));
-        });
-      }
-
-      function formatSpeechRateDisplay(v) {
-        const x = clampSpeechRate(v);
-        return (Math.round(x * 10) / 10).toFixed(1) + '×';
-      }
-
-      function syncSpeechRateUi() {
-        if (!speechRateInput) return;
-        const saved = localStorage.getItem(SPEECH_RATE_KEY);
-        if (saved != null && saved !== '') {
-          const r = clampSpeechRate(parseFloat(saved));
-          speechRateInput.value = String(r);
-        }
-        if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(speechRateInput.value);
-      }
-
-      syncSpeechRateUi();
-      if (speechRateInput) {
-        speechRateInput.addEventListener('input', () => {
-          const r = clampSpeechRate(parseFloat(speechRateInput.value));
-          speechRateInput.value = String(r);
-          localStorage.setItem(SPEECH_RATE_KEY, speechRateInput.value);
-          if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(r);
-        });
-      }
-
-      btnPlay.addEventListener('click', () => {
-        const text = getSpeakableContent();
-        if (!text) return;
-        speakText(text);
-      });
-
-      btnPause.addEventListener('click', () => {
-        if (speechSynthesis.speaking) speechSynthesis.pause();
-      });
-
-      btnResume.addEventListener('click', () => {
-        // if (speechSynthesis.paused) speechSynthesis.resume();
-        speechSynthesis.resume();
-      });
-
-      btnStop.addEventListener('click', () => {
-        speechSynthesis.cancel();
-      });
-    }
-
-    function getSpeakableContentFromRoot(rootEl) {
-      if (!rootEl) return '';
-      const clone = rootEl.cloneNode(true);
-      clone.querySelectorAll('.md-heading-actions').forEach((w) => w.remove());
-      if (skipCodeBlocksCheckbox && skipCodeBlocksCheckbox.checked) {
-        clone.querySelectorAll('pre').forEach((pre) => {
-          pre.innerText = codeblockAlternativeText;
-        });
-      }
-      return clone.innerText || '';
-    }
-
-    function getSpeakableContent() {
-      const el = document.getElementById('file-content');
-      return getSpeakableContentFromRoot(el).trim();
-    }
-
-    function getHeadingLevel(tagName) {
-      const m = /^H([1-6])$/i.exec(tagName || '');
-      return m ? parseInt(m[1], 10) : 0;
-    }
-
-    /** Siblings after `heading` until the next heading of same or higher outline level. */
-    function getSectionElementsAfterHeading(heading) {
-      const level = getHeadingLevel(heading.tagName);
-      const nodes = [];
-      let n = heading.nextElementSibling;
-      while (n) {
-        const nextLevel = getHeadingLevel(n.tagName);
-        if (nextLevel > 0 && nextLevel <= level) break;
-        nodes.push(n);
-        n = n.nextElementSibling;
-      }
-      return nodes;
-    }
-
-    function getSpeakableTextForHeadingSection(heading) {
-      const wrap = document.createElement('div');
-      wrap.appendChild(heading.cloneNode(true));
-      getSectionElementsAfterHeading(heading).forEach((el) => {
-        wrap.appendChild(el.cloneNode(true));
-      });
-      return getSpeakableContentFromRoot(wrap).trim();
-    }
-
-    /** Heading plus all following siblings inside the document (to end of article). */
-    function getSpeakableTextFromHeadingToEnd(heading) {
-      const wrap = document.createElement('div');
-      wrap.appendChild(heading.cloneNode(true));
-      let n = heading.nextElementSibling;
-      while (n) {
-        wrap.appendChild(n.cloneNode(true));
-        n = n.nextElementSibling;
-      }
-      return getSpeakableContentFromRoot(wrap).trim();
-    }
-
-    const SECTION_PLAY_SVG =
-      '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>';
-
-    const SECTION_PLAY_TO_END_SVG =
-      '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/><path d="M19 5h2v14h-2V5z"/></svg>';
-
-    const HEADING_AUDIO_BTN_CLASS =
-      'heading-audio-btn no-print p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors';
-
-    function speakText(text) {
-      const t = String(text || '').trim();
-      if (!t) return;
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(t);
-      const voices = speechSynthesis.getVoices();
-      const chosen = voiceSelect && voiceSelect.value && voices.find((v) => v.name === voiceSelect.value);
-      if (chosen) u.voice = chosen;
-      u.lang = 'en';
-      if (speechRateInput) {
-        u.rate = clampSpeechRate(parseFloat(speechRateInput.value));
-      }
-      speechSynthesis.speak(u);
-    }
-
-    function enhanceHeadingsWithSectionPlay(container) {
-      if (!container) return;
-      container.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
-        if (heading.querySelector('.md-heading-actions')) return;
-        heading.classList.add('md-heading-with-play');
-
-        const textWrap = document.createElement('span');
-        textWrap.className = 'md-heading-text';
-        while (heading.firstChild) {
-          textWrap.appendChild(heading.firstChild);
-        }
-
-        const actions = document.createElement('span');
-        actions.className = 'md-heading-actions';
-        actions.setAttribute('role', 'group');
-        actions.setAttribute('aria-label', 'Speech playback for this heading');
-
-        const btnSection = document.createElement('button');
-        btnSection.type = 'button';
-        btnSection.className = HEADING_AUDIO_BTN_CLASS;
-        btnSection.setAttribute('aria-label', 'Play section from this heading');
-        btnSection.title = 'Play this section';
-        btnSection.innerHTML = SECTION_PLAY_SVG;
-        btnSection.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          speakText(getSpeakableTextForHeadingSection(heading));
-        });
-
-        const btnToEnd = document.createElement('button');
-        btnToEnd.type = 'button';
-        btnToEnd.className = HEADING_AUDIO_BTN_CLASS;
-        btnToEnd.setAttribute('aria-label', 'Play from this heading to end of document');
-        btnToEnd.title = 'Play from here to end';
-        btnToEnd.innerHTML = SECTION_PLAY_TO_END_SVG;
-        btnToEnd.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          speakText(getSpeakableTextFromHeadingToEnd(heading));
-        });
-
-        actions.appendChild(btnSection);
-        actions.appendChild(btnToEnd);
-        heading.appendChild(textWrap);
-        heading.appendChild(actions);
-      });
-    }
-
     function encodeViewerPath(path) {
       // Encode only &, =, % so slashes stay as /
       return String(path || '').replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
@@ -898,7 +566,7 @@
       if (!fileContentElement) return;
       fileContentElement.innerHTML =
         '<p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">Select a file from the File Explorer to view its contents.</p>';
-      voiceControllerContent = '';
+      if (window.ViewerVoice) window.ViewerVoice.stop();
       if (window.ViewerToc) window.ViewerToc.build(null);
     }
 
@@ -1071,10 +739,9 @@
 
       applyTagVisibility();
 
-      voiceControllerContent = fileContentElement.innerText || '';
 
       if (window.ViewerToc) window.ViewerToc.build(fileContentElement);
-      enhanceHeadingsWithSectionPlay(fileContentElement);
+      if (window.ViewerVoice) window.ViewerVoice.enhance(fileContentElement);
 
       // Scroll to hash if present in URL (e.g. after refresh or direct link)
       if (window.location.hash) {

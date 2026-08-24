@@ -1,0 +1,54 @@
+/* Per-heading play control: appears on heading hover / focus-within */
+.markdown-body h1.md-heading-with-play,
+.markdown-body h2.md-heading-with-play,
+.markdown-body h3.md-heading-with-play,
+.markdown-body h4.md-heading-with-play,
+.markdown-body h5.md-heading-with-play,
+.markdown-body h6.md-heading-with-play {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.markdown-body .md-heading-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.markdown-body .md-heading-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-top: 0.15em;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.markdown-body h1.md-heading-with-play:hover .md-heading-actions,
+.markdown-body h2.md-heading-with-play:hover .md-heading-actions,
+.markdown-body h3.md-heading-with-play:hover .md-heading-actions,
+.markdown-body h4.md-heading-with-play:hover .md-heading-actions,
+.markdown-body h5.md-heading-with-play:hover .md-heading-actions,
+.markdown-body h6.md-heading-with-play:hover .md-heading-actions,
+.markdown-body h1.md-heading-with-play:focus-within .md-heading-actions,
+.markdown-body h2.md-heading-with-play:focus-within .md-heading-actions,
+.markdown-body h3.md-heading-with-play:focus-within .md-heading-actions,
+.markdown-body h4.md-heading-with-play:focus-within .md-heading-actions,
+.markdown-body h5.md-heading-with-play:focus-within .md-heading-actions,
+.markdown-body h6.md-heading-with-play:focus-within .md-heading-actions {
+  opacity: 1;
+}
+
+/* Touch / no-hover: keep control discoverable (primary interaction is still tap) */
+@media (hover: none) {
+  .markdown-body .md-heading-actions {
+    opacity: 0.55;
+  }
+}
