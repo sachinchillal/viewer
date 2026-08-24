@@ -15,7 +15,8 @@
     "build:copy": "tsc && npm run copy-public",
     "copy-public": "copyfiles -u 1 \"src/public/**/*\" dist",
     "test": "jest",
-    "start": "ts-node src/index.ts"
+    "start": "node index.js",
+    "start-dev": "ts-node src/index.ts"
   },
   "repository": {
     "type": "git",

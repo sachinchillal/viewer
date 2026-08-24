@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <!-- <base href="/viewer/"> -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viewer</title>
@@ -30,9 +31,9 @@
       darkMode: 'class'
     }
   </script>
-  <link rel="stylesheet" href="/css/settings.css">
-  <link rel="stylesheet" href="/css/toc.css">
-  <link rel="stylesheet" href="/css/explorer.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/toc.css">
+  <link rel="stylesheet" href="css/explorer.css">
   <style>
     /* Ensure html/body background follows theme (Tailwind class applies on html) */
     html {
@@ -311,7 +312,7 @@
       <main class="flex-1 min-w-0 w-full">
         <header id="mobile-header"
           class="no-print lg:hidden sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 mb-2 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-700 bg-inherit">
-          <a href="/" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
+          <a href="./" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
             <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
             <span class="text-xl font-bold leading-none">Viewer</span>
           </a>
@@ -325,7 +326,7 @@
           </div>
         </header>
         <div class="no-print hidden lg:flex justify-between items-center">
-          <a href="/" class="app-brand text-blue-600 dark:text-blue-400">
+          <a href="./" class="app-brand text-blue-600 dark:text-blue-400">
             <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
             <h1 class="text-2xl font-bold leading-none m-0">Viewer</h1>
           </a>
@@ -403,14 +404,14 @@
     </div>
   </div>
 
-  <script src="/js/settings.js"></script>
-  <script src="/js/toc.js"></script>
-  <script src="/js/explorer.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/toc.js"></script>
+  <script src="js/explorer.js"></script>
   <script>
-    // To deploy in a root path, use this URL
-    const API_BASE_URL = '/api';
-    // To deploy in a subpath, use this URL
-    // const API_BASE_URL = '/viewer/api';
+    const APP_BASE_PATH = window.location.pathname
+      .replace(/\/index\.html$/, '')
+      .replace(/\/+$/, '');
+    const API_BASE_URL = `${APP_BASE_PATH}/api`;
     const TAGS_TO_TOGGLE = [
       {
         tag: 'blockquote',
@@ -444,10 +445,6 @@
       return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
     }
 
-    init();
-    initVoiceController();
-    initTagToggles();
-    initMobilePanels();
     if (window.ViewerExplorer) {
       window.ViewerExplorer.init({
         apiBaseUrl: API_BASE_URL,
@@ -466,6 +463,10 @@
         closeMobilePanels: () => closeMobilePanels()
       });
     }
+    init();
+    initVoiceController();
+    initTagToggles();
+    initMobilePanels();
 
 
     function init() {
@@ -892,7 +893,7 @@
       window.history.pushState({ path, hash: hash || '' }, '', newUrl);
     }
 
-    function updateUrl(path, hash) {
+    function showEmptyFileContent() {
       const fileContentElement = document.getElementById('file-content');
       if (!fileContentElement) return;
       fileContentElement.innerHTML =

@@ -5,7 +5,7 @@
   const TOOLBAR_BTN_CLASS =
     'p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors';
 
-  let apiBaseUrl = '/api';
+  let apiBaseUrl = '';
   let onNavigate = () => { };
   let onFileData = () => { };
   let onEmpty = () => { };
@@ -366,7 +366,7 @@
   }
 
   function init(options) {
-    apiBaseUrl = options?.apiBaseUrl || '/api';
+    apiBaseUrl = options?.apiBaseUrl || apiBaseUrl;
     onNavigate = typeof options?.onNavigate === 'function' ? options.onNavigate : () => { };
     onFileData = typeof options?.onFileData === 'function' ? options.onFileData : () => { };
     onEmpty = typeof options?.onEmpty === 'function' ? options.onEmpty : () => { };

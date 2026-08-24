@@ -41,3 +41,76 @@ html.dark .theme-btn-active {
     display: none !important;
   }
 }
+
+/* Compact density: tighter markdown typography only */
+html.density-compact .markdown-body {
+  line-height: 1.5;
+}
+
+html.density-compact .markdown-body p,
+html.density-compact .markdown-body blockquote,
+html.density-compact .markdown-body ul,
+html.density-compact .markdown-body ol,
+html.density-compact .markdown-body dl,
+html.density-compact .markdown-body table,
+html.density-compact .markdown-body pre,
+html.density-compact .markdown-body details {
+  margin-top: 0;
+  margin-bottom: 0.65em;
+}
+
+html.density-compact .markdown-body h1,
+html.density-compact .markdown-body h2,
+html.density-compact .markdown-body h3,
+html.density-compact .markdown-body h4,
+html.density-compact .markdown-body h5,
+html.density-compact .markdown-body h6,
+html.density-compact .post-card-body.markdown-body h1,
+html.density-compact .post-card-body.markdown-body h2,
+html.density-compact .post-card-body.markdown-body h3,
+html.density-compact .post-card-body.markdown-body h4,
+html.density-compact .post-card-body.markdown-body h5,
+html.density-compact .post-card-body.markdown-body h6 {
+  margin-top: 0.55rem;
+  margin-bottom: 0.25rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: 1.25;
+}
+
+html.density-compact .markdown-body > h1:first-child,
+html.density-compact .markdown-body > h2:first-child,
+html.density-compact .markdown-body > h3:first-child,
+html.density-compact .markdown-body > h4:first-child,
+html.density-compact .markdown-body > h5:first-child,
+html.density-compact .markdown-body > h6:first-child {
+  margin-top: 0;
+}
+
+html.density-compact .markdown-body li + li {
+  margin-top: 0.15em;
+}
+
+html.density-compact .markdown-body li > p {
+  margin-top: 0.35em;
+  margin-bottom: 0.35em;
+}
+
+html.density-compact .markdown-body hr {
+  margin: 1em 0;
+}
+
+html.density-compact .markdown-body p,
+html.density-compact .markdown-body li,
+html.density-compact .markdown-body blockquote {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Beat posts page .post-card-body.markdown-body p/li/blockquote { line-height: 1.8 } */
+html.density-compact .post-card-body.markdown-body p,
+html.density-compact .post-card-body.markdown-body li,
+html.density-compact .post-card-body.markdown-body blockquote {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}

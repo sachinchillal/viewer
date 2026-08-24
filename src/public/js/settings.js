@@ -5,6 +5,9 @@
   const THEME_AUTO = 'auto';
   const THEME_DARK = 'dark';
   const THEME_LIGHT = 'light';
+  const DENSITY_KEY = 'viewer-density';
+  const DENSITY_NORMAL = 'normal';
+  const DENSITY_COMPACT = 'compact';
   const TWO_COLUMN_PRINT_KEY = 'viewer-two-column-print';
 
   const htmlElement = document.documentElement;
@@ -31,6 +34,13 @@
           <button type="button" id="btn-auto" class="${THEME_BTN_CLASS}">Auto</button>
           <button type="button" id="btn-dark" class="${THEME_BTN_CLASS}">Dark</button>
           <button type="button" id="btn-light" class="${THEME_BTN_CLASS}">Light</button>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Density</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" id="btn-density-normal" class="${THEME_BTN_CLASS}">Normal</button>
+          <button type="button" id="btn-density-compact" class="${THEME_BTN_CLASS}">Compact</button>
         </div>
       </div>
       <label for="is-two-column-print"
@@ -105,6 +115,27 @@
     });
   }
 
+  function updateDensityButtonStates(mode) {
+    document.getElementById('btn-density-normal')?.classList.toggle('theme-btn-active', mode === DENSITY_NORMAL);
+    document.getElementById('btn-density-compact')?.classList.toggle('theme-btn-active', mode === DENSITY_COMPACT);
+  }
+
+  function applyDensity(mode) {
+    const density = mode === DENSITY_COMPACT ? DENSITY_COMPACT : DENSITY_NORMAL;
+    htmlElement.classList.toggle('density-compact', density === DENSITY_COMPACT);
+    localStorage.setItem(DENSITY_KEY, density);
+    updateDensityButtonStates(density);
+  }
+
+  function initDensity() {
+    const saved = localStorage.getItem(DENSITY_KEY);
+    const initialMode = saved === DENSITY_COMPACT ? DENSITY_COMPACT : DENSITY_NORMAL;
+    applyDensity(initialMode);
+
+    document.getElementById('btn-density-normal')?.addEventListener('click', () => applyDensity(DENSITY_NORMAL));
+    document.getElementById('btn-density-compact')?.addEventListener('click', () => applyDensity(DENSITY_COMPACT));
+  }
+
   function updateTwoColumnPrintClass(enabled) {
     document.body.classList.toggle('two-column-print', enabled);
   }
@@ -169,6 +200,7 @@
   function init(options) {
     injectMarkup();
     initTheme();
+    initDensity();
     initTwoColumnPrint();
     initSettingsPanel(options || {});
   }

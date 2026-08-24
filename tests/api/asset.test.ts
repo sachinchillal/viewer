@@ -4,7 +4,7 @@ import request from 'supertest';
 import { app } from '../../src/index';
 import { PRIVATE_DIR } from '../data/constants';
 
-const API_BASE_URL = '/viewer/api/';
+const API_BASE_URL = '/api/';
 
 describe(`GET ${API_BASE_URL}asset`, () => {
   const fixtureDir = path.join(PRIVATE_DIR, 'asset-fixture');

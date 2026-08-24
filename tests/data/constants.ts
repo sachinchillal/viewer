@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 
-export const API_BASE_URL = '/viewer/api/';
+export const API_BASE_URL = '/api/';
 
 export const PRIVATE_DIR = path.join(__dirname, '../../src/private');
 

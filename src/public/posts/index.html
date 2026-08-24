@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <base href="/">
+  <!-- <base href="/viewer/"> -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Viewer</title>
@@ -31,9 +31,9 @@
       darkMode: 'class'
     }
   </script>
-  <link rel="stylesheet" href="/css/settings.css">
-  <link rel="stylesheet" href="/css/toc.css">
-  <link rel="stylesheet" href="/css/explorer.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/toc.css">
+  <link rel="stylesheet" href="css/explorer.css">
   <style>
     /* Ensure html/body background follows theme (Tailwind class applies on html) */
     html {
@@ -558,6 +558,212 @@
       background: rgba(30, 41, 59, 0.98);
     }
 
+    .reader-suggestions {
+      margin-top: 1.25rem;
+      padding: 1.15rem 1.25rem 1.25rem;
+      border: 1px solid #dbe4f0;
+      border-radius: 1.15rem;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    html.dark .reader-suggestions {
+      border-color: #253047;
+      background: linear-gradient(180deg, rgba(22, 31, 45, 0.96), rgba(13, 17, 23, 0.92));
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .reader-suggestions-title {
+      margin: 0;
+      color: #0f172a;
+      font-size: 1.05rem;
+      line-height: 1.3;
+    }
+
+    html.dark .reader-suggestions-title {
+      color: #f8fafc;
+    }
+
+    .reader-suggestions-copy {
+      margin: 0.45rem 0 0;
+      color: #64748b;
+      line-height: 1.65;
+    }
+
+    html.dark .reader-suggestions-copy {
+      color: #94a3b8;
+    }
+
+    .reader-suggestions-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .reader-suggestion-link {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-height: 100%;
+      padding: 0.95rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid #cbd5e1;
+      background: rgba(255, 255, 255, 0.96);
+      color: inherit;
+      text-decoration: none;
+      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .reader-suggestion-link:hover {
+      transform: translateY(-1px);
+      border-color: #60a5fa;
+      background: #eff6ff;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+    }
+
+    html.dark .reader-suggestion-link {
+      border-color: #334155;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    html.dark .reader-suggestion-link:hover {
+      border-color: #60a5fa;
+      background: rgba(30, 41, 59, 0.98);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+    }
+
+    .reader-suggestion-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #2563eb;
+    }
+
+    html.dark .reader-suggestion-eyebrow {
+      color: #93c5fd;
+    }
+
+    .reader-suggestion-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+      word-break: break-word;
+    }
+
+    html.dark .reader-suggestion-name {
+      color: #f8fafc;
+    }
+
+    .reader-suggestion-meta {
+      font-size: 0.88rem;
+      color: #64748b;
+    }
+
+    html.dark .reader-suggestion-meta {
+      color: #94a3b8;
+    }
+
+    .reader-section-index {
+      margin-top: 1.25rem;
+      padding: 1.15rem 1.25rem 1.25rem;
+      border: 1px solid #dbe4f0;
+      border-radius: 1.15rem;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    html.dark .reader-section-index {
+      border-color: #253047;
+      background: linear-gradient(180deg, rgba(22, 31, 45, 0.96), rgba(13, 17, 23, 0.92));
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .reader-section-index-title {
+      margin: 0;
+      color: #0f172a;
+      font-size: 1.05rem;
+      line-height: 1.3;
+    }
+
+    html.dark .reader-section-index-title {
+      color: #f8fafc;
+    }
+
+    .reader-section-index-copy {
+      margin: 0.45rem 0 0;
+      color: #64748b;
+      line-height: 1.65;
+    }
+
+    html.dark .reader-section-index-copy {
+      color: #94a3b8;
+    }
+
+    .reader-section-index-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 1rem;
+    }
+
+    .reader-section-index-link {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.85rem;
+      border: 1px solid #cbd5e1;
+      background: rgba(255, 255, 255, 0.96);
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .reader-section-index-link:hover {
+      transform: translateY(-1px);
+      border-color: #60a5fa;
+      background: #eff6ff;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.1);
+    }
+
+    .reader-section-index-link.is-current {
+      border-color: #2563eb;
+      background: #eff6ff;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+    }
+
+    html.dark .reader-section-index-link {
+      border-color: #334155;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    html.dark .reader-section-index-link:hover {
+      border-color: #60a5fa;
+      background: rgba(30, 41, 59, 0.98);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+    }
+
+    html.dark .reader-section-index-link.is-current {
+      border-color: #60a5fa;
+      background: rgba(30, 58, 95, 0.72);
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.28);
+    }
+
+    .reader-section-index-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #0f172a;
+      word-break: break-word;
+    }
+
+    html.dark .reader-section-index-label {
+      color: #f8fafc;
+    }
+
     .progress-confirm-backdrop {
       position: fixed;
       inset: 0;
@@ -717,7 +923,9 @@
       .post-card-header,
       .post-card-body.markdown-body,
       .reader-empty-state,
-      .reader-error-state {
+      .reader-error-state,
+      .reader-suggestions,
+      .reader-section-index {
         padding-left: 1rem;
         padding-right: 1rem;
       }
@@ -743,7 +951,8 @@
       #toc-sidebar,
       #controls-sidebar,
       #mobile-header,
-      #panel-backdrop {
+      #panel-backdrop,
+      .reader-section-index {
         display: none !important;
         /* Hide elements in print */
       }
@@ -819,7 +1028,7 @@
       <main class="flex-1 min-w-0 w-full">
         <header id="mobile-header"
           class="no-print lg:hidden sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 mb-2 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-700 bg-inherit">
-          <a href="/" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
+          <a href="./" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
             <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
             <span class="text-xl font-bold leading-none">Viewer</span>
           </a>
@@ -833,7 +1042,7 @@
           </div>
         </header>
         <div class="no-print hidden lg:flex justify-between items-center">
-          <a href="/" class="app-brand text-blue-600 dark:text-blue-400">
+          <a href="./" class="app-brand text-blue-600 dark:text-blue-400">
             <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
             <h1 class="text-2xl font-bold leading-none m-0">Viewer</h1>
           </a>
@@ -917,19 +1126,20 @@
       <p id="progress-confirm-copy" class="progress-confirm-copy"></p>
       <div class="progress-confirm-actions">
         <button type="button" id="progress-confirm-cancel" class="progress-confirm-btn">Cancel</button>
-        <button type="button" id="progress-confirm-submit" class="progress-confirm-btn progress-confirm-btn-primary">Confirm</button>
+        <button type="button" id="progress-confirm-submit"
+          class="progress-confirm-btn progress-confirm-btn-primary">Confirm</button>
       </div>
     </div>
   </div>
 
-  <script src="/js/explorer.js"></script>
-  <script src="/js/settings.js"></script>
-  <script src="/js/toc.js"></script>
+  <script src="js/explorer.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/toc.js"></script>
   <script>
-    // To deploy in a root path, use this URL
-    const API_BASE_URL = '/api';
-    // To deploy in a subpath, use this URL
-    // const API_BASE_URL = '/viewer/api';
+    const APP_BASE_PATH = '/' + window.location.pathname
+      .split('/')
+      .filter(Boolean)[0];
+    const API_BASE_URL = `${APP_BASE_PATH}/api`;
     const TAGS_TO_TOGGLE = [
       {
         tag: 'blockquote',
@@ -960,6 +1170,7 @@
     let currentCardIndex = 0;
     let currentReaderFilePath = '';
     let currentReaderFileName = '';
+    let currentReaderSiblingFiles = [];
     let readerTouchStart = null;
     let sectionProgress = {};
     let pendingProgressAction = null;
@@ -970,22 +1181,22 @@
       return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
     }
 
-    init();
-    initVoiceController();
-    initTagToggles();
-    initMobilePanels();
     if (window.ViewerExplorer) {
       window.ViewerExplorer.init({
         apiBaseUrl: API_BASE_URL,
         onNavigate: (path) => updateUrl(path),
         onFileData: (data, root) => {
+          currentReaderSiblingFiles = extractSiblingFileNames(data);
           if (isMarkdownFilePath(root)) {
             loadPostContent(root);
           } else {
             renderFileContent(data.fileContent, root);
           }
         },
-        onEmpty: () => showEmptyFileContent(),
+        onEmpty: () => {
+          currentReaderSiblingFiles = [];
+          showEmptyFileContent();
+        },
       });
     }
     if (window.ViewerToc) {
@@ -998,6 +1209,10 @@
         closeMobilePanels: () => closeMobilePanels()
       });
     }
+    init();
+    initVoiceController();
+    initTagToggles();
+    initMobilePanels();
     initProgressConfirmModal();
 
 
@@ -1055,6 +1270,16 @@
           showPreviousReaderCard();
         } else if (direction === 'next') {
           showNextReaderCard();
+        }
+        return;
+      }
+
+      const sectionIndexButton = e.target.closest && e.target.closest('[data-reader-card-index]');
+      if (sectionIndexButton && e.currentTarget.contains(sectionIndexButton)) {
+        e.preventDefault();
+        const index = Number(sectionIndexButton.getAttribute('data-reader-card-index'));
+        if (Number.isInteger(index)) {
+          showReaderCard(index);
         }
         return;
       }
@@ -1601,6 +1826,7 @@
       readerCards = [];
       currentCardIndex = 0;
       sectionProgress = {};
+      currentReaderSiblingFiles = [];
       setReaderMode(Boolean(options.readerMode));
       fileContentElement.innerHTML =
         `<div class="posts-reader">
@@ -1619,6 +1845,7 @@
       readerCards = [];
       currentCardIndex = 0;
       sectionProgress = {};
+      currentReaderSiblingFiles = [];
       setReaderMode(true);
       fileContentElement.innerHTML = `
         <div class="posts-reader">
@@ -1701,6 +1928,97 @@
             data-completion-action="${action}"
             data-section-id="${escapeHtmlAttr(activeCard.sectionId)}">${escapeHtmlText(buttonLabel)}</button>
         </div>`;
+    }
+
+    function extractSiblingFileNames(data) {
+      if (Array.isArray(data?.list) && data.list.length > 0) {
+        return data.list.filter((name) => typeof name === 'string' && name && name !== '..');
+      }
+      if (Array.isArray(data?.tree)) {
+        return data.tree
+          .filter((node) => node && node.type === 'file' && typeof node.name === 'string' && node.name)
+          .map((node) => node.name);
+      }
+      return [];
+    }
+
+    function getCurrentReaderDirectoryPath() {
+      const parts = String(currentReaderFilePath || '').split('/').filter(Boolean);
+      parts.pop();
+      return parts.join('/');
+    }
+
+    function buildSuggestionPath(fileName) {
+      const parentPath = getCurrentReaderDirectoryPath();
+      return parentPath ? `${parentPath}/${fileName}` : fileName;
+    }
+
+    function getSuggestedMarkdownFiles() {
+      const currentFileName = String(currentReaderFileName || '').trim();
+      return currentReaderSiblingFiles.filter((name) => {
+        return /\.md$/i.test(name)
+          && name !== '..'
+          && name !== currentFileName;
+      });
+    }
+
+    function renderSectionIndex() {
+      if (!readerCards.length) {
+        return '';
+      }
+
+      const sectionItems = readerCards
+        .map((card, index) => ({ card, index }))
+        .filter(({ card }) => card.kind === 'section');
+      if (!sectionItems.length) {
+        return '';
+      }
+
+      const links = sectionItems.map(({ card, index }) => {
+        const isCurrent = index === currentCardIndex;
+        return `
+          <button type="button"
+            class="reader-section-index-link${isCurrent ? ' is-current' : ''}"
+            data-reader-card-index="${index}"
+            ${isCurrent ? 'aria-current="page"' : ''}>
+            <span class="reader-section-index-label">${escapeHtmlText(card.title)}</span>
+          </button>`;
+      }).join('');
+
+      return `
+        <section class="reader-section-index no-print" aria-labelledby="reader-section-index-title">
+          <h2 id="reader-section-index-title" class="reader-section-index-title">Sections</h2>
+          <p class="reader-section-index-copy">Jump to any H2 in this file.</p>
+          <div class="reader-section-index-list">${links}</div>
+        </section>`;
+    }
+
+    function renderSuggestionsSection() {
+      if (!readerCards.length || currentCardIndex !== readerCards.length - 1) {
+        return '';
+      }
+      const suggestedFiles = getSuggestedMarkdownFiles();
+      if (!suggestedFiles.length) {
+        return '';
+      }
+
+      const suggestionCards = suggestedFiles.map((fileName) => {
+        const href = toViewerHref(buildSuggestionPath(fileName));
+        const label = fileName.replace(/\.md$/i, '');
+        return `
+          <a class="reader-suggestion-link" href="${escapeHtmlAttr(href)}">
+            <span class="reader-suggestion-eyebrow">Read next</span>
+            <span class="reader-suggestion-name">${escapeHtmlText(label)}</span>
+            <span class="reader-suggestion-meta">Open ${escapeHtmlText(fileName)}</span>
+          </a>`;
+      }).join('');
+
+      return `
+        <section class="reader-suggestions" aria-labelledby="reader-suggestions-title">
+          <h2 id="reader-suggestions-title" class="reader-suggestions-title">Suggested next reads</h2>
+          <p class="reader-suggestions-copy">Other markdown files in this folder you can open next.</p>
+          <div class="reader-suggestions-list">${suggestionCards}</div>
+        </section>`;
     }
 
     function initProgressConfirmModal() {
@@ -1854,6 +2172,8 @@
               ${renderCompletionFooter(activeCard)}
             </article>
           </div>
+          ${renderSectionIndex()}
+          ${renderSuggestionsSection()}
         </div>`;
 
       setReaderMode(true);
