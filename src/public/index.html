@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="bg-white text-black">
 
 <head>
   <!-- <base href="/viewer/"> -->
@@ -24,13 +24,34 @@
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css"
     id="markdown-light" media="none">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script>
-    tailwind.config = {
-      // Enable class-based dark mode
-      darkMode: 'class'
-    }
+    (function () {
+      var mode = localStorage.getItem('viewer-theme');
+      var dark = mode === 'dark' || (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var html = document.documentElement;
+      html.classList.add(dark ? 'dark' : 'light');
+      html.classList.remove(dark ? 'light' : 'dark');
+      html.style.colorScheme = dark ? 'dark' : 'light';
+      var darkMedia = dark ? 'all' : 'none';
+      var lightMedia = dark ? 'none' : 'all';
+      var hljsDark = document.getElementById('hljs-dark');
+      var hljsLight = document.getElementById('hljs-light');
+      var markdownDark = document.getElementById('markdown-dark');
+      var markdownLight = document.getElementById('markdown-light');
+      if (hljsDark) hljsDark.media = darkMedia;
+      if (hljsLight) hljsLight.media = lightMedia;
+      if (markdownDark) markdownDark.media = darkMedia;
+      if (markdownLight) markdownLight.media = lightMedia;
+    })();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (.dark &);
+    html.dark {
+      background-color: var(--color-gray-900);
+      color: var(--color-gray-200);
+    }
+  </style>
   <link rel="stylesheet" href="css/settings.css">
   <link rel="stylesheet" href="css/toc.css">
   <link rel="stylesheet" href="css/explorer.css">
@@ -38,16 +59,8 @@
   <link rel="stylesheet" href="css/loader.css">
   <link rel="stylesheet" href="css/reading-time.css">
   <style>
-    /* Ensure html/body background follows theme (Tailwind class applies on html) */
     html {
-      background-color: #fff;
-      color: #000;
       scroll-behavior: smooth;
-    }
-
-    html.dark {
-      background-color: #111827;
-      color: #e5e7eb;
     }
 
     body {
@@ -127,11 +140,6 @@
       margin: 0;
       /* margin: 0 auto; */
       padding: 45px;
-      background-color: #fff;
-    }
-
-    html.dark .markdown-body {
-      background-color: #0d1117;
     }
 
     .markdown-body ol,

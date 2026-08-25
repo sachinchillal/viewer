@@ -74,14 +74,14 @@
 
     return (
       '<div class="' + className + '" role="group" aria-label="Estimated reading and study time">' +
-        '<span class="reading-time-item">' +
+        '<span class="reading-time-item bg-blue-50 text-blue-900 dark:bg-blue-500/15 dark:text-blue-200">' +
           '<span class="reading-time-value">' + escapeHtml(stats.readLabel) + '</span>' +
-          '<span class="reading-time-label">' + escapeHtml(readSuffix) + '</span>' +
+          '<span class="reading-time-label text-blue-500 dark:text-blue-300">' + escapeHtml(readSuffix) + '</span>' +
         '</span>' +
-        '<span class="reading-time-sep" aria-hidden="true"></span>' +
-        '<span class="reading-time-item">' +
+        '<span class="reading-time-sep bg-slate-300 dark:bg-slate-600" aria-hidden="true"></span>' +
+        '<span class="reading-time-item bg-blue-50 text-blue-900 dark:bg-blue-500/15 dark:text-blue-200">' +
           '<span class="reading-time-value">' + escapeHtml(stats.studyLabel) + '</span>' +
-          '<span class="reading-time-label">' + escapeHtml(studySuffix) + '</span>' +
+          '<span class="reading-time-label text-blue-500 dark:text-blue-300">' + escapeHtml(studySuffix) + '</span>' +
         '</span>' +
       '</div>'
     );

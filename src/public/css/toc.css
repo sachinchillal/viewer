@@ -19,14 +19,6 @@
   font-size: 12px;
 }
 
-.toc-sidebar a:hover {
-  color: #2563eb;
-}
-
-html.dark .toc-sidebar a:hover {
-  color: #60a5fa;
-}
-
 .toc-sidebar .toc-h2 {
   margin-left: 0;
 }

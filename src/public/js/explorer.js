@@ -4,6 +4,12 @@
   const EXPLORER_VIEW_KEY = 'explorerViewMode';
   const TOOLBAR_BTN_CLASS =
     'p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors';
+  const EXPLORER_MODE_ACTIVE_CLASSES = [
+    '!bg-gray-200',
+    '!border-gray-400',
+    'dark:!bg-gray-700',
+    'dark:!border-gray-500',
+  ];
 
   let apiBaseUrl = '';
   let onNavigate = () => { };
@@ -66,7 +72,7 @@
     mount.innerHTML = `
       <div class="flex items-center gap-2">
         <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File Explorer</label>
-        <span id="explorer-loading" class="no-print" aria-hidden="true"></span>
+        <span id="explorer-loading" class="no-print text-gray-500 dark:text-gray-400" aria-hidden="true"></span>
       </div>
       <div class="mt-1 mb-1 flex flex-wrap gap-1 no-print" role="toolbar" aria-label="File explorer controls">
         <button type="button" id="btn-explorer-list" title="List view" aria-label="List view" class="${TOOLBAR_BTN_CLASS}">
@@ -100,12 +106,16 @@
     const expandBtn = document.getElementById('btn-expand-all');
     const collapseBtn = document.getElementById('btn-collapse-all');
     const isTree = explorerViewMode === 'tree';
+    function toggleModeActive(el, isActive) {
+      if (!el) return;
+      EXPLORER_MODE_ACTIVE_CLASSES.forEach((cls) => el.classList.toggle(cls, isActive));
+    }
     if (listBtn) {
-      listBtn.classList.toggle('explorer-mode-active', explorerViewMode === 'list');
+      toggleModeActive(listBtn, explorerViewMode === 'list');
       listBtn.setAttribute('aria-pressed', explorerViewMode === 'list' ? 'true' : 'false');
     }
     if (treeBtn) {
-      treeBtn.classList.toggle('explorer-mode-active', isTree);
+      toggleModeActive(treeBtn, isTree);
       treeBtn.setAttribute('aria-pressed', isTree ? 'true' : 'false');
     }
     if (expandBtn) {
@@ -194,17 +204,19 @@
       const isDir = node.type === 'directory';
       const isExpanded = isDir && expandedPaths.has(nodePath);
       const isActive = activePath && nodePath === activePath;
-      const activeClass = isActive ? ' is-active' : '';
       const chevron = isDir
-        ? `<span class="explorer-tree-chevron" data-tree-toggle="${escapeHtmlAttr(nodePath)}" aria-hidden="true">${isExpanded ? '▼' : '▶'}</span>`
+        ? `<span class="explorer-tree-chevron text-gray-500 dark:text-gray-400" data-tree-toggle="${escapeHtmlAttr(nodePath)}" aria-hidden="true">${isExpanded ? '▼' : '▶'}</span>`
         : '<span class="explorer-tree-spacer" aria-hidden="true"></span>';
       const childrenHtml = isDir && isExpanded
         ? `<ul class="explorer-tree">${renderTreeNodes(node.children || [], nodePath, activePath)}</ul>`
         : '';
+      const labelClass = isActive
+        ? 'explorer-tree-label font-semibold text-blue-600 dark:text-blue-400'
+        : 'explorer-tree-label group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:underline';
       return `<li>
-          <div class="explorer-tree-item${activeClass}" data-tree-path="${escapeHtmlAttr(nodePath)}" data-tree-type="${isDir ? 'directory' : 'file'}" title="${escapeHtmlAttr(node.name)}">
+          <div class="explorer-tree-item group" data-tree-path="${escapeHtmlAttr(nodePath)}" data-tree-type="${isDir ? 'directory' : 'file'}" title="${escapeHtmlAttr(node.name)}">
             ${chevron}
-            <span class="explorer-tree-label">${escapeHtmlText(node.name)}</span>
+            <span class="${labelClass}">${escapeHtmlText(node.name)}</span>
           </div>
           ${childrenHtml}
         </li>`;
@@ -215,9 +227,9 @@
     const directoriesList = document.getElementById('directories-list');
     if (!directoriesList) return;
     const parentRow = `<li>
-        <div class="explorer-tree-item" data-directory=".." title="Go back">
+        <div class="explorer-tree-item group" data-directory=".." title="Go back">
           <span class="explorer-tree-spacer" aria-hidden="true"></span>
-          <span class="explorer-tree-label">.. (go back)</span>
+          <span class="explorer-tree-label group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:underline">.. (go back)</span>
         </div>
       </li>`;
     directoriesList.innerHTML = `<ul class="explorer-tree">${parentRow}${renderTreeNodes(nodes, treeBase, activePath)}</ul>`;

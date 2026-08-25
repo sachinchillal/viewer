@@ -60,7 +60,7 @@
       const a = document.createElement('a');
       a.href = '#' + id;
       a.textContent = h.textContent;
-      a.classList.add('toc-' + h.tagName.toLowerCase());
+      a.classList.add('toc-' + h.tagName.toLowerCase(), 'hover:text-blue-600', 'dark:hover:text-blue-400');
       a.addEventListener('click', (e) => {
         e.preventDefault();
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

@@ -19,7 +19,7 @@ export type ProgressActionResponse = {
   message: string;
 };
 
-const defaultProgressPath = path.resolve(__dirname, 'data', 'viewer', 'posts-progress.json');
+const defaultProgressPath = path.resolve(__dirname, 'data', 'posts-progress.json');
 
 export const getProgressFilePath = (): string =>
   process.env.POSTS_PROGRESS_PATH || defaultProgressPath;
@@ -69,7 +69,8 @@ export const readProgress = (): ProgressStore => {
 export const writeProgress = (data: ProgressStore): void => {
   const filePath = getProgressFilePath();
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  // fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  fs.writeFileSync(filePath, JSON.stringify(data), 'utf8');
 };
 
 export const getProgressForFile = (root: string): SectionProgressMap => {

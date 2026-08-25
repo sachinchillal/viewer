@@ -27,7 +27,7 @@
     const wrap = document.createElement('span');
     wrap.className = variant === 'inline'
       ? 'viewer-loader viewer-loader--inline no-print'
-      : 'viewer-loader viewer-loader--overlay no-print';
+      : 'viewer-loader viewer-loader--overlay no-print bg-white/70 text-gray-700 dark:bg-gray-950/70 dark:text-gray-300';
     wrap.setAttribute('role', 'status');
     wrap.setAttribute('aria-live', 'polite');
     wrap.setAttribute('data-viewer-loader', variant);

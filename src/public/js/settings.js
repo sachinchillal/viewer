@@ -19,6 +19,14 @@
 
   const THEME_BTN_CLASS =
     'px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors';
+  const THEME_BTN_ACTIVE_CLASSES = [
+    '!bg-blue-100',
+    '!border-blue-400',
+    '!text-blue-700',
+    'dark:!bg-blue-900',
+    'dark:!border-blue-500',
+    'dark:!text-blue-100',
+  ];
 
   function injectMarkup() {
     if (document.getElementById('btn-settings')) return;
@@ -100,10 +108,15 @@
     }
   }
 
+  function toggleThemeBtnActive(el, isActive) {
+    if (!el) return;
+    THEME_BTN_ACTIVE_CLASSES.forEach((cls) => el.classList.toggle(cls, isActive));
+  }
+
   function updateThemeButtonStates(mode) {
-    document.getElementById('btn-auto')?.classList.toggle('theme-btn-active', mode === THEME_AUTO);
-    document.getElementById('btn-dark')?.classList.toggle('theme-btn-active', mode === THEME_DARK);
-    document.getElementById('btn-light')?.classList.toggle('theme-btn-active', mode === THEME_LIGHT);
+    toggleThemeBtnActive(document.getElementById('btn-auto'), mode === THEME_AUTO);
+    toggleThemeBtnActive(document.getElementById('btn-dark'), mode === THEME_DARK);
+    toggleThemeBtnActive(document.getElementById('btn-light'), mode === THEME_LIGHT);
   }
 
   function applyTheme(mode) {
@@ -112,17 +125,18 @@
       ? (systemThemeMedia.matches ? THEME_DARK : THEME_LIGHT)
       : requestedMode;
 
-    if (effectiveMode === THEME_DARK) {
+    const isDark = effectiveMode === THEME_DARK;
+    if (isDark) {
       htmlElement.classList.add(THEME_DARK);
       htmlElement.classList.remove(THEME_LIGHT);
     } else {
       htmlElement.classList.remove(THEME_DARK);
       htmlElement.classList.add(THEME_LIGHT);
     }
+    htmlElement.style.colorScheme = isDark ? THEME_DARK : THEME_LIGHT;
     localStorage.setItem(THEME_KEY, requestedMode);
     updateThemeButtonStates(requestedMode);
 
-    const isDark = effectiveMode === THEME_DARK;
     const hljsDark = document.getElementById('hljs-dark');
     const hljsLight = document.getElementById('hljs-light');
     const markdownDark = document.getElementById('markdown-dark');
@@ -151,8 +165,8 @@
   }
 
   function updateDensityButtonStates(mode) {
-    document.getElementById('btn-density-normal')?.classList.toggle('theme-btn-active', mode === DENSITY_NORMAL);
-    document.getElementById('btn-density-compact')?.classList.toggle('theme-btn-active', mode === DENSITY_COMPACT);
+    toggleThemeBtnActive(document.getElementById('btn-density-normal'), mode === DENSITY_NORMAL);
+    toggleThemeBtnActive(document.getElementById('btn-density-compact'), mode === DENSITY_COMPACT);
   }
 
   function applyDensity(mode) {
