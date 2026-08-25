@@ -64,7 +64,10 @@
     if (!mount || document.getElementById('directories-list')) return;
 
     mount.innerHTML = `
-      <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File Explorer</label>
+      <div class="flex items-center gap-2">
+        <label for="directories-list" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">File Explorer</label>
+        <span id="explorer-loading" class="no-print" aria-hidden="true"></span>
+      </div>
       <div class="mt-1 mb-1 flex flex-wrap gap-1 no-print" role="toolbar" aria-label="File explorer controls">
         <button type="button" id="btn-explorer-list" title="List view" aria-label="List view" class="${TOOLBAR_BTN_CLASS}">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -266,6 +269,18 @@
     navigateToRoot(nextRoot);
   }
 
+  function showLoaders() {
+    if (!global.ViewerLoader) return;
+    global.ViewerLoader.show('#explorer-loading', { variant: 'inline' });
+    global.ViewerLoader.show('#file-content');
+  }
+
+  function hideLoaders() {
+    if (!global.ViewerLoader) return;
+    global.ViewerLoader.hide('#explorer-loading');
+    global.ViewerLoader.hide('#file-content');
+  }
+
   function load(root = '', options = {}) {
     const preserveTree = Boolean(options.preserveTree)
       && explorerViewMode === 'tree'
@@ -277,6 +292,7 @@
     if (wantTree) params.push('tree=1');
     if (params.length) url += '?' + params.join('&');
 
+    showLoaders();
     return fetch(url, { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json();
@@ -318,6 +334,9 @@
         showExplorerError('Failed to fetch directories');
         console.error('Error fetching directories:', error);
         return false;
+      })
+      .finally(() => {
+        hideLoaders();
       });
   }
 

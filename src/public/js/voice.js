@@ -24,23 +24,12 @@
 
   let contentRootSelector = '#file-content';
   let speakSession = 0;
-  let voiceSelect = null;
-  let speechRateInput = null;
-  let speechRateValueEl = null;
   let skipCodeBlocksCheckbox = null;
 
   function clampSpeechRate(n) {
     const x = Number(n);
     if (!Number.isFinite(x)) return 1;
     return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
-  }
-
-  function escapeHtmlAttr(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
   }
 
   function injectMarkup() {
@@ -52,33 +41,12 @@
     controller.id = 'voice-controller';
     controller.className = VOICE_CONTROLLER_CLASS;
     controller.innerHTML = `
-          <label for="voice-select" class="font-medium text-gray-700 dark:text-gray-400 shrink-0">Voice</label>
-          <select id="voice-select"
-            class="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-colors"
-            style="width: stretch;">
-            <option value="">Select voice…</option>
-            <option value="default">Default</option>
-          </select>
           <label
             class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
             <input type="checkbox" id="skip-code-blocks"
               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
             <span>Skip code blocks</span>
           </label>
-          <div class="w-full flex flex-col gap-1.5 mt-1">
-            <div class="flex items-center justify-between gap-2">
-              <label for="speech-rate" class="font-medium text-gray-700 dark:text-gray-400 text-xs shrink-0">Speech
-                rate</label>
-              <span id="speech-rate-value"
-                class="text-xs tabular-nums text-gray-600 dark:text-gray-400 shrink-0">1.0×</span>
-            </div>
-            <input type="range" id="speech-rate" min="0.5" max="2" step="0.1" value="1"
-              class="w-full h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-600 accent-blue-600 dark:accent-blue-500 cursor-pointer">
-            <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 leading-none">
-              <span>Slower</span>
-              <span>Faster</span>
-            </div>
-          </div>
           <button type="button" id="btn-play" title="Play"
             class="p-2 rounded text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -108,77 +76,17 @@
   }
 
   function bindControls() {
-    voiceSelect = document.getElementById('voice-select');
-    speechRateInput = document.getElementById('speech-rate');
-    speechRateValueEl = document.getElementById('speech-rate-value');
     skipCodeBlocksCheckbox = document.getElementById('skip-code-blocks');
     const btnPlay = document.getElementById('btn-play');
     const btnPause = document.getElementById('btn-pause');
     const btnResume = document.getElementById('btn-resume');
     const btnStop = document.getElementById('btn-stop');
 
-    function populateVoices() {
-      if (!voiceSelect) return;
-      const voices = speechSynthesis.getVoices();
-      const englishVoices = voices.filter((v) => v.lang.startsWith('en'));
-      voiceSelect.innerHTML =
-        '<option value="">Select voice…</option>' +
-        englishVoices
-          .map(
-            (v) =>
-              `<option value="${escapeHtmlAttr(v.name)}">${escapeHtmlAttr(v.name)} (${escapeHtmlAttr(v.lang)})</option>`
-          )
-          .join('');
-
-      const saved = localStorage.getItem(VOICE_STORAGE_KEY);
-      if (saved && [...voiceSelect.options].some((o) => o.value === saved)) {
-        voiceSelect.value = saved;
-      }
-    }
-
-    if (speechSynthesis.getVoices().length) {
-      populateVoices();
-    } else {
-      speechSynthesis.addEventListener('voiceschanged', populateVoices);
-    }
-
-    if (voiceSelect) {
-      voiceSelect.addEventListener('change', () => {
-        const value = voiceSelect.value;
-        if (value) localStorage.setItem(VOICE_STORAGE_KEY, value);
-      });
-    }
-
     const savedSkipCode = localStorage.getItem(SKIP_CODE_BLOCKS_KEY);
     if (skipCodeBlocksCheckbox) {
       skipCodeBlocksCheckbox.checked = savedSkipCode === 'true';
       skipCodeBlocksCheckbox.addEventListener('change', () => {
         localStorage.setItem(SKIP_CODE_BLOCKS_KEY, String(skipCodeBlocksCheckbox.checked));
-      });
-    }
-
-    function formatSpeechRateDisplay(v) {
-      const x = clampSpeechRate(v);
-      return (Math.round(x * 10) / 10).toFixed(1) + '×';
-    }
-
-    function syncSpeechRateUi() {
-      if (!speechRateInput) return;
-      const saved = localStorage.getItem(SPEECH_RATE_KEY);
-      if (saved != null && saved !== '') {
-        const r = clampSpeechRate(parseFloat(saved));
-        speechRateInput.value = String(r);
-      }
-      if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(speechRateInput.value);
-    }
-
-    syncSpeechRateUi();
-    if (speechRateInput) {
-      speechRateInput.addEventListener('input', () => {
-        const r = clampSpeechRate(parseFloat(speechRateInput.value));
-        speechRateInput.value = String(r);
-        localStorage.setItem(SPEECH_RATE_KEY, speechRateInput.value);
-        if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(r);
       });
     }
 
@@ -388,12 +296,11 @@
       const chunk = chunks[i++];
       const u = new SpeechSynthesisUtterance(chunk.text);
       const voices = speechSynthesis.getVoices();
-      const chosen = voiceSelect && voiceSelect.value && voices.find((v) => v.name === voiceSelect.value);
+      const savedVoice = localStorage.getItem(VOICE_STORAGE_KEY);
+      const chosen = savedVoice && voices.find((v) => v.name === savedVoice);
       if (chosen) u.voice = chosen;
       u.lang = 'en';
-      if (speechRateInput) {
-        u.rate = clampSpeechRate(parseFloat(speechRateInput.value));
-      }
+      u.rate = clampSpeechRate(parseFloat(localStorage.getItem(SPEECH_RATE_KEY)));
       u.onend = () => {
         if (session !== speakSession) return;
         const gap = chunk.kind === 'heading' ? SPEECH_GAP_AFTER_HEADING_MS : SPEECH_GAP_AFTER_BLOCK_MS;

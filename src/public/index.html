@@ -35,6 +35,8 @@
   <link rel="stylesheet" href="css/toc.css">
   <link rel="stylesheet" href="css/explorer.css">
   <link rel="stylesheet" href="css/voice.css">
+  <link rel="stylesheet" href="css/loader.css">
+  <link rel="stylesheet" href="css/reading-time.css">
   <style>
     /* Ensure html/body background follows theme (Tailwind class applies on html) */
     html {
@@ -282,6 +284,7 @@
           </a>
           <a href="posts/" class="posts-page-link text-blue-600 dark:text-blue-400 text-sm font-medium">Posts</a>
         </div>
+        <div id="file-reading-time" class="file-reading-time no-print hidden" hidden></div>
         <div id="file-content" class="markdown-body mt-4 lg:mt-6">
           <p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">
             Select a file from the File Explorer to view its contents.
@@ -302,6 +305,8 @@
     </div>
   </div>
 
+  <script src="js/loader.js"></script>
+  <script src="js/reading-time.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/toc.js"></script>
   <script src="js/explorer.js"></script>
@@ -561,11 +566,18 @@
       window.history.pushState({ path, hash: hash || '' }, '', newUrl);
     }
 
+    function updateReadingTime(source) {
+      if (window.ViewerReadingTime) {
+        window.ViewerReadingTime.fill('#file-reading-time', source);
+      }
+    }
+
     function showEmptyFileContent() {
       const fileContentElement = document.getElementById('file-content');
       if (!fileContentElement) return;
       fileContentElement.innerHTML =
         '<p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">Select a file from the File Explorer to view its contents.</p>';
+      updateReadingTime('');
       if (window.ViewerVoice) window.ViewerVoice.stop();
       if (window.ViewerToc) window.ViewerToc.build(null);
     }
@@ -739,7 +751,7 @@
 
       applyTagVisibility();
 
-
+      updateReadingTime(fileContent);
       if (window.ViewerToc) window.ViewerToc.build(fileContentElement);
       if (window.ViewerVoice) window.ViewerVoice.enhance(fileContentElement);
 

@@ -9,6 +9,10 @@
   const DENSITY_NORMAL = 'normal';
   const DENSITY_COMPACT = 'compact';
   const TWO_COLUMN_PRINT_KEY = 'viewer-two-column-print';
+  const VOICE_STORAGE_KEY = 'viewer-voice';
+  const SPEECH_RATE_KEY = 'viewer-speech-rate';
+  const SPEECH_RATE_MIN = 0.5;
+  const SPEECH_RATE_MAX = 2;
 
   const htmlElement = document.documentElement;
   const systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
@@ -49,6 +53,37 @@
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
         <span>Is Two Column Print</span>
       </label>
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between gap-2">
+          <label for="voice-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Voice</label>
+          <button type="button" id="btn-refresh-voices" aria-label="Refresh voices" title="Refresh voices"
+            class="${THEME_BTN_CLASS} inline-flex items-center justify-center p-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"
+              aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+        <select id="voice-select"
+          class="w-full px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-colors">
+          <option value="">Select voice…</option>
+        </select>
+      </div>
+      <div class="w-full flex flex-col gap-1.5">
+        <div class="flex items-center justify-between gap-2">
+          <label for="speech-rate" class="text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">Speech
+            rate</label>
+          <span id="speech-rate-value"
+            class="text-xs tabular-nums text-gray-600 dark:text-gray-400 shrink-0">1.0×</span>
+        </div>
+        <input type="range" id="speech-rate" min="0.5" max="2" step="0.1" value="1"
+          class="w-full h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-600 accent-blue-600 dark:accent-blue-500 cursor-pointer">
+        <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 leading-none">
+          <span>Slower</span>
+          <span>Faster</span>
+        </div>
+      </div>
     </div>
   </div>
   <button type="button" id="btn-settings" aria-label="Open settings" aria-controls="settings-panel" aria-expanded="false"
@@ -155,6 +190,93 @@
     });
   }
 
+  function escapeHtmlAttr(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function clampSpeechRate(n) {
+    const x = Number(n);
+    if (!Number.isFinite(x)) return 1;
+    return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
+  }
+
+  function formatSpeechRateDisplay(v) {
+    const x = clampSpeechRate(v);
+    return (Math.round(x * 10) / 10).toFixed(1) + '×';
+  }
+
+  function populateVoices() {
+    const voiceSelect = document.getElementById('voice-select');
+    if (!voiceSelect || typeof speechSynthesis === 'undefined') return;
+    const voices = speechSynthesis.getVoices();
+    const englishVoices = voices.filter((v) => v.lang.startsWith('en'));
+    voiceSelect.innerHTML =
+      '<option value="">Select voice…</option>' +
+      englishVoices
+        .map(
+          (v) =>
+            `<option value="${escapeHtmlAttr(v.name)}">${escapeHtmlAttr(v.name)} (${escapeHtmlAttr(v.lang)})</option>`
+        )
+        .join('');
+
+    const saved = localStorage.getItem(VOICE_STORAGE_KEY);
+    if (saved && [...voiceSelect.options].some((o) => o.value === saved)) {
+      voiceSelect.value = saved;
+    }
+  }
+
+  function initVoiceSettings() {
+    const voiceSelect = document.getElementById('voice-select');
+    const speechRateInput = document.getElementById('speech-rate');
+    const speechRateValueEl = document.getElementById('speech-rate-value');
+    const btnRefreshVoices = document.getElementById('btn-refresh-voices');
+
+    populateVoices();
+    if (typeof speechSynthesis !== 'undefined') {
+      speechSynthesis.addEventListener('voiceschanged', populateVoices);
+    }
+
+    if (voiceSelect) {
+      voiceSelect.addEventListener('change', () => {
+        const value = voiceSelect.value;
+        if (value) localStorage.setItem(VOICE_STORAGE_KEY, value);
+      });
+    }
+
+    if (btnRefreshVoices) {
+      btnRefreshVoices.addEventListener('click', () => {
+        if (typeof speechSynthesis !== 'undefined') {
+          speechSynthesis.getVoices();
+        }
+        populateVoices();
+      });
+    }
+
+    function syncSpeechRateUi() {
+      if (!speechRateInput) return;
+      const saved = localStorage.getItem(SPEECH_RATE_KEY);
+      if (saved != null && saved !== '') {
+        const r = clampSpeechRate(parseFloat(saved));
+        speechRateInput.value = String(r);
+      }
+      if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(speechRateInput.value);
+    }
+
+    syncSpeechRateUi();
+    if (speechRateInput) {
+      speechRateInput.addEventListener('input', () => {
+        const r = clampSpeechRate(parseFloat(speechRateInput.value));
+        speechRateInput.value = String(r);
+        localStorage.setItem(SPEECH_RATE_KEY, speechRateInput.value);
+        if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(r);
+      });
+    }
+  }
+
   function initSettingsPanel(options) {
     const closeMobilePanels = typeof options?.closeMobilePanels === 'function'
       ? options.closeMobilePanels
@@ -202,6 +324,7 @@
     initTheme();
     initDensity();
     initTwoColumnPrint();
+    initVoiceSettings();
     initSettingsPanel(options || {});
   }
 
