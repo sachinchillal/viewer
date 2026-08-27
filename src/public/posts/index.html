@@ -59,6 +59,7 @@
   <link rel="stylesheet" href="css/voice.css">
   <link rel="stylesheet" href="css/loader.css">
   <link rel="stylesheet" href="css/reading-time.css">
+  <link rel="stylesheet" href="css/dwell-encouragement.css">
   <style>
     html {
       scroll-behavior: smooth;
@@ -273,16 +274,6 @@
       margin: 0 0 1rem;
     }
 
-    .reader-progress {
-      font-size: 0.95rem;
-      color: var(--color-gray-600);
-      font-weight: 600;
-    }
-
-    html.dark .reader-progress {
-      color: var(--color-gray-300);
-    }
-
     .reader-nav-buttons {
       display: inline-flex;
       gap: 0.75rem;
@@ -293,9 +284,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 2.8rem;
-      min-height: 2.8rem;
-      padding: 0.7rem 0.95rem;
+      min-width: 2.4rem;
+      min-height: 2.4rem;
+      padding: 0 0.4rem;
       border-radius: 999px;
       border: 1px solid var(--color-gray-300);
       background: rgba(255, 255, 255, 0.98);
@@ -362,15 +353,6 @@
       background: linear-gradient(180deg, rgba(22, 31, 45, 0.96), rgba(13, 17, 23, 0.92));
     }
 
-    .post-card-meta {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.65rem;
-    }
-
     .post-card-badge {
       display: inline-flex;
       align-items: center;
@@ -379,7 +361,6 @@
       background: var(--color-blue-100);
       color: var(--color-blue-700);
       font-size: 0.75rem;
-      font-weight: 700;
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
@@ -387,15 +368,6 @@
     html.dark .post-card-badge {
       background: rgba(59, 130, 246, 0.18);
       color: var(--color-blue-300);
-    }
-
-    .post-card-hint {
-      font-size: 0.8rem;
-      color: var(--color-gray-500);
-    }
-
-    html.dark .post-card-hint {
-      color: var(--color-gray-400);
     }
 
     .post-card-title {
@@ -521,21 +493,21 @@
       background: linear-gradient(180deg, rgba(22, 31, 45, 0.96), rgba(13, 17, 23, 0.92));
     }
 
-    .post-card-completion-status {
-      margin: 0;
-      font-size: 0.9rem;
-      color: var(--color-green-800);
-      font-weight: 600;
+    .post-card-completion-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    html.dark .post-card-completion-status {
-      color: var(--color-green-300);
+    .post-card-completion-actions .reader-nav-btn {
+      flex: 0 0 auto;
     }
 
     .post-card-completion-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex: 1 1 auto;
       min-height: 2.75rem;
       padding: 0.7rem 1rem;
       border-radius: 0.85rem;
@@ -568,191 +540,6 @@
 
     html.dark .post-card-completion-btn.is-unmark:hover {
       background: rgba(30, 41, 59, 0.98);
-    }
-
-    .reader-suggestions {
-      margin-top: 1.25rem;
-      padding: 1.15rem 1.25rem 1.25rem;
-      border: 1px solid var(--color-gray-200);
-      border-radius: 1.15rem;
-      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    html.dark .reader-suggestions {
-      border-color: var(--color-gray-700);
-      background: linear-gradient(180deg, rgba(22, 31, 45, 0.96), rgba(13, 17, 23, 0.92));
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-    }
-
-    .reader-suggestions-title {
-      margin: 0;
-      color: var(--color-gray-900);
-      font-size: 1.05rem;
-      line-height: 1.3;
-    }
-
-    html.dark .reader-suggestions-title {
-      color: var(--color-gray-50);
-    }
-
-    .reader-suggestions-copy {
-      margin: 0.45rem 0 0;
-      color: var(--color-gray-500);
-      line-height: 1.65;
-    }
-
-    html.dark .reader-suggestions-copy {
-      color: var(--color-gray-400);
-    }
-
-    .reader-suggestions-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0.85rem;
-      margin-top: 1rem;
-    }
-
-    .reader-suggestion-link {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      min-height: 100%;
-      padding: 0.7rem 0.9rem;
-      border-radius: 1rem;
-      border: 1px solid var(--color-gray-300);
-      background: rgba(255, 255, 255, 0.96);
-      color: inherit;
-      text-decoration: none;
-      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .reader-suggestion-link:hover {
-      transform: translateY(-1px);
-      border-color: var(--color-blue-400);
-      background: var(--color-blue-50);
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
-    }
-
-    html.dark .reader-suggestion-link {
-      border-color: var(--color-gray-700);
-      background: rgba(15, 23, 42, 0.9);
-    }
-
-    html.dark .reader-suggestion-link:hover {
-      border-color: var(--color-blue-400);
-      background: rgba(30, 41, 59, 0.98);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
-    }
-
-    .reader-suggestion-link.is-current {
-      border-color: var(--color-blue-600);
-      background: var(--color-blue-50);
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
-    }
-
-    html.dark .reader-suggestion-link.is-current {
-      border-color: var(--color-blue-400);
-      background: rgba(30, 58, 95, 0.72);
-      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.28);
-    }
-
-    .reader-suggestion-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--color-gray-900);
-      word-break: break-word;
-    }
-
-    html.dark .reader-suggestion-name {
-      color: var(--color-gray-50);
-    }
-
-    .reader-suggestion-meta {
-      font-size: 0.88rem;
-      color: var(--color-gray-500);
-    }
-
-    html.dark .reader-suggestion-meta {
-      color: var(--color-gray-400);
-    }
-
-    .reader-section-index {
-      margin-top: 1.25rem;
-      padding: 1.15rem 1.25rem 1.25rem;
-      border: 1px solid var(--color-gray-200);
-      border-radius: 1.15rem;
-      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98));
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    html.dark .reader-section-index {
-      border-color: var(--color-gray-700);
-      background: linear-gradient(180deg, rgba(22, 31, 45, 0.96), rgba(13, 17, 23, 0.92));
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-    }
-
-    .reader-section-index-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      margin-top: 1rem;
-    }
-
-    .reader-section-index-link {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      padding: 0.7rem 0.9rem;
-      border-radius: 0.85rem;
-      border: 1px solid var(--color-gray-300);
-      background: rgba(255, 255, 255, 0.96);
-      color: inherit;
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .reader-section-index-link:hover {
-      transform: translateY(-1px);
-      border-color: var(--color-blue-400);
-      background: var(--color-blue-50);
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.1);
-    }
-
-    .reader-section-index-link.is-current {
-      border-color: var(--color-blue-600);
-      background: var(--color-blue-50);
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
-    }
-
-    html.dark .reader-section-index-link {
-      border-color: var(--color-gray-700);
-      background: rgba(15, 23, 42, 0.9);
-    }
-
-    html.dark .reader-section-index-link:hover {
-      border-color: var(--color-blue-400);
-      background: rgba(30, 41, 59, 0.98);
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
-    }
-
-    html.dark .reader-section-index-link.is-current {
-      border-color: var(--color-blue-400);
-      background: rgba(30, 58, 95, 0.72);
-      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.28);
-    }
-
-    .reader-section-index-label {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--color-gray-900);
-      word-break: break-word;
-    }
-
-    html.dark .reader-section-index-label {
-      color: var(--color-gray-50);
     }
 
     .progress-confirm-backdrop {
@@ -859,9 +646,7 @@
       .post-card-header,
       .post-card-body.markdown-body,
       .reader-empty-state,
-      .reader-error-state,
-      .reader-suggestions,
-      .reader-section-index {
+      .reader-error-state {
         padding-left: 1rem;
         padding-right: 1rem;
       }
@@ -887,8 +672,7 @@
       #toc-sidebar,
       #controls-sidebar,
       #mobile-header,
-      #panel-backdrop,
-      .reader-section-index {
+      #panel-backdrop {
         display: none !important;
         /* Hide elements in print */
       }
@@ -968,10 +752,14 @@
       <main class="flex-1 min-w-0 w-full">
         <header id="mobile-header"
           class="no-print lg:hidden sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 mb-2 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-gray-700 bg-inherit">
-          <a href="./" class="app-brand text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
-            <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
-            <span class="text-xl font-bold leading-none">Viewer</span>
-          </a>
+          <div class="flex items-center gap-3 min-w-0">
+            <a href="./" class="app-brand viewer-page-link text-blue-600 dark:text-blue-400 min-h-11 shrink-0">
+              <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
+              <span class="text-xl font-bold leading-none">Viewer</span>
+            </a>
+            <a href="./"
+              class="viewer-page-link text-blue-600 dark:text-blue-400 text-sm font-medium min-h-11 inline-flex items-center shrink-0">Viewer</a>
+          </div>
           <div class="flex items-center gap-1 shrink-0">
             <button type="button" id="btn-mobile-toc" aria-expanded="false" aria-controls="toc-sidebar"
               aria-label="Open table of contents"
@@ -982,17 +770,20 @@
           </div>
         </header>
         <div class="no-print hidden lg:flex justify-between items-center">
-          <a href="./" class="app-brand text-blue-600 dark:text-blue-400">
+          <a href="./" class="app-brand viewer-page-link text-blue-600 dark:text-blue-400">
             <img src="favicon-32x32.png" alt="" width="32" height="32" class="app-brand-logo" aria-hidden="true">
             <h1 class="text-2xl font-bold leading-none m-0">Viewer</h1>
           </a>
+          <a href="./" class="viewer-page-link text-blue-600 dark:text-blue-400 text-sm font-medium">Viewer</a>
         </div>
         <div id="file-reading-time" class="file-reading-time no-print hidden" hidden></div>
-        <div id="file-content" class="markdown-body mt-4 lg:mt-6">
+        <div id="file-content" class="mt-4 lg:mt-6">
           <p class="file-content-empty text-center text-gray-500 dark:text-gray-400 py-8 lg:py-12">
             Select a file from the File Explorer to view its contents.
           </p>
         </div>
+        <div id="container-section-index" class="no-print"></div>
+        <div id="container-reader-suggestions" class="no-print"></div>
       </main>
       <aside id="controls-sidebar"
         class="panel-drawer panel-drawer-right right-sidebar no-print flex flex-col fixed inset-y-0 right-0 z-50 w-[min(85vw,18rem)] p-4 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-lg lg:static lg:inset-auto lg:z-auto lg:w-56 lg:shrink-0 lg:p-0 lg:shadow-none lg:border-0">
@@ -1026,12 +817,15 @@
   <script src="js/settings.js"></script>
   <script src="js/toc.js"></script>
   <script src="js/voice.js"></script>
+  <script src="js/dwell-encouragement.js"></script>
   <script>
-    // const APP_BASE_PATH = '/' + window.location.pathname
-    //   .split('/')
-    //   .filter(Boolean)[0];
-    // const API_BASE_URL = `${APP_BASE_PATH}/api`;
+    const APP_BASE_PATH = window.location.pathname
+      .replace(/\/index\.html$/, '')
+      .replace(/\/posts\/?$/, '')
+      .replace(/\/+$/, '');
     const API_BASE_URL = '/api';
+    // const API_BASE_URL = '/viewer/api';
+    const VIEWER_PAGE_URL = `${APP_BASE_PATH}/`;
     const TAGS_TO_TOGGLE = [
       {
         tag: 'blockquote',
@@ -1072,7 +866,11 @@
     }
     if (window.ViewerToc) {
       window.ViewerToc.init({
-        closeMobilePanels: () => closeMobilePanels()
+        closeMobilePanels: () => closeMobilePanels(),
+        onHashChange: (id) => syncViewerPageLinks(
+          new URLSearchParams(window.location.search).get('path') || '',
+          id
+        )
       });
     }
     if (window.ViewerSettings) {
@@ -1083,6 +881,9 @@
     if (window.ViewerVoice) {
       window.ViewerVoice.init({ contentRootSelector: '#file-content' });
     }
+    if (window.ViewerDwellEncouragement) {
+      window.ViewerDwellEncouragement.init();
+    }
     init();
     initTagToggles();
     initMobilePanels();
@@ -1092,6 +893,8 @@
     function init() {
       const urlParams = new URLSearchParams(window.location.search);
       const pathFromUrl = urlParams.get('path') || '';
+      const hashFromUrl = (window.location.hash || '').replace(/^#/, '');
+      syncViewerPageLinks(pathFromUrl, hashFromUrl);
       if (window.ViewerExplorer) {
         window.ViewerExplorer.setCurrentRoot(pathFromUrl);
         window.ViewerExplorer.load(pathFromUrl);
@@ -1103,10 +906,20 @@
         fileContentElement.addEventListener('touchstart', handleReaderTouchStart, { passive: true });
         fileContentElement.addEventListener('touchend', handleReaderTouchEnd, { passive: true });
       }
+      const containerSectionIndex = document.getElementById('container-section-index');
+      if (containerSectionIndex) {
+        containerSectionIndex.addEventListener('click', handleFileContentLinkClick);
+      }
+      const containerReaderSuggestions = document.getElementById('container-reader-suggestions');
+      if (containerReaderSuggestions) {
+        containerReaderSuggestions.addEventListener('click', handleFileContentLinkClick);
+      }
 
       window.addEventListener('popstate', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const pathFromUrl = urlParams.get('path') || '';
+        const hashFromUrl = (window.location.hash || '').replace(/^#/, '');
+        syncViewerPageLinks(pathFromUrl, hashFromUrl);
         if (window.ViewerExplorer) {
           window.ViewerExplorer.setCurrentRoot(pathFromUrl);
           window.ViewerExplorer.load(pathFromUrl);
@@ -1171,6 +984,7 @@
         const id = decodeURIComponent(href.slice(1));
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
+        syncViewerPageLinks(new URLSearchParams(window.location.search).get('path') || '', id);
         return;
       }
 
@@ -1404,6 +1218,24 @@
       return String(path || '').replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
     }
 
+    function buildPathHref(baseUrl, path, hash) {
+      let href = baseUrl;
+      if (path) {
+        href += '?path=' + encodeViewerPath(path);
+      }
+      if (hash) {
+        href += '#' + String(hash).replace(/^#/, '');
+      }
+      return href;
+    }
+
+    function syncViewerPageLinks(path, hash) {
+      const href = buildPathHref(VIEWER_PAGE_URL, path, hash);
+      document.querySelectorAll('.viewer-page-link').forEach((link) => {
+        link.setAttribute('href', href);
+      });
+    }
+
     function updateUrl(path, hash) {
       let newUrl = window.location.origin + window.location.pathname;
       if (path) {
@@ -1413,6 +1245,7 @@
         newUrl += '#' + String(hash).replace(/^#/, '');
       }
       window.history.pushState({ path, hash: hash || '' }, '', newUrl);
+      syncViewerPageLinks(path, hash);
     }
 
     function escapeHtmlAttr(value) {
@@ -1557,7 +1390,10 @@
         </div>`;
       if (window.ViewerVoice) window.ViewerVoice.stop();
       if (window.ViewerToc) window.ViewerToc.build(null);
+      if (window.ViewerDwellEncouragement) window.ViewerDwellEncouragement.stop();
       updateReadingTime('');
+      setSectionIndexHtml('');
+      setSuggestionsHtml('');
     }
 
     function showReaderError(message, detail = 'Please try another file or check whether the post API is available.') {
@@ -1577,7 +1413,10 @@
         </div>`;
       if (window.ViewerVoice) window.ViewerVoice.stop();
       if (window.ViewerToc) window.ViewerToc.build(null);
+      if (window.ViewerDwellEncouragement) window.ViewerDwellEncouragement.stop();
       updateReadingTime('');
+      setSectionIndexHtml('');
+      setSuggestionsHtml('');
     }
 
     function buildReaderCards(postsData, filePath, fileName) {
@@ -1632,6 +1471,85 @@
       return getSectionTimestamps(sectionId).some((ts) => isSameLocalDayClient(ts));
     }
 
+    function getSectionLastReadTimestamp(sectionId) {
+      const timestamps = getSectionTimestamps(sectionId);
+      return timestamps.length ? Math.max(...timestamps) : null;
+    }
+
+    function isSectionCompletedWithinHours(sectionId, hours, ref = Date.now()) {
+      const lastRead = getSectionLastReadTimestamp(sectionId);
+      return lastRead != null && (ref - lastRead) <= hours * 60 * 60 * 1000;
+    }
+
+    function renderSectionCompletionCheck(sectionId) {
+      if (sectionId == null) {
+        return '';
+      }
+      const completedToday = isSectionCompletedToday(sectionId);
+      const completedRecently = !completedToday && isSectionCompletedWithinHours(sectionId, 24);
+      if (!completedToday && !completedRecently) {
+        return '';
+      }
+      const label = completedToday ? 'Completed today' : 'Completed in the last 24 hours';
+      const colorClass = completedToday
+        ? 'text-emerald-600 dark:text-emerald-400'
+        : 'text-gray-400 dark:text-gray-500';
+      return `
+        <svg class="h-4 w-4 shrink-0 ${colorClass}" viewBox="0 0 20 20" fill="currentColor" role="img" aria-label="${escapeHtmlAttr(label)}">
+          <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+        </svg>`;
+    }
+
+    function setSectionIndexHtml(html = '') {
+      const containerSectionIndex = document.getElementById('container-section-index');
+      if (containerSectionIndex) {
+        containerSectionIndex.innerHTML = html;
+      }
+    }
+
+    function setSuggestionsHtml(html = '') {
+      const containerReaderSuggestions = document.getElementById('container-reader-suggestions');
+      if (containerReaderSuggestions) {
+        containerReaderSuggestions.innerHTML = html;
+      }
+    }
+
+    function formatRelativeTimeAgo(timestamp, ref = Date.now()) {
+      const diffMs = Math.max(0, ref - Number(timestamp));
+      const minuteMs = 60 * 1000;
+      const hourMs = 60 * minuteMs;
+      const dayMs = 24 * hourMs;
+      const weekMs = 7 * dayMs;
+      const monthMs = 30 * dayMs;
+      const yearMs = 365 * dayMs;
+
+      if (diffMs < minuteMs) {
+        return 'just now';
+      }
+      if (diffMs < hourMs) {
+        const minutes = Math.max(1, Math.floor(diffMs / minuteMs));
+        return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+      }
+      if (diffMs < dayMs) {
+        const hours = Math.max(1, Math.floor(diffMs / hourMs));
+        return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+      }
+      if (diffMs < weekMs) {
+        const days = Math.max(1, Math.floor(diffMs / dayMs));
+        return days === 1 ? '1 day ago' : `${days} days ago`;
+      }
+      if (diffMs < monthMs) {
+        const weeks = Math.max(1, Math.floor(diffMs / weekMs));
+        return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+      }
+      if (diffMs < yearMs) {
+        const months = Math.max(1, Math.floor(diffMs / monthMs));
+        return months === 1 ? '1 month ago' : `${months} months ago`;
+      }
+      const years = Math.max(1, Math.floor(diffMs / yearMs));
+      return years === 1 ? '1 year ago' : `${years} years ago`;
+    }
+
     function renderCompletionFooter(activeCard) {
       if (!activeCard || activeCard.kind !== 'section' || activeCard.sectionId == null) {
         return '';
@@ -1639,16 +1557,30 @@
       const completedToday = isSectionCompletedToday(activeCard.sectionId);
       const action = completedToday ? 'unmark' : 'mark';
       const buttonLabel = completedToday ? 'Unmark for today' : 'Mark as completed';
-      const statusHtml = completedToday
-        ? '<p class="post-card-completion-status">Completed today</p>'
-        : '';
+      const lastRead = getSectionLastReadTimestamp(activeCard.sectionId);
+      let statusHtml = '';
+      if (completedToday) {
+        statusHtml = '<p>Completed today</p>';
+      }
+      if (lastRead != null) {
+        statusHtml += `<p class="ml-auto">Last read ${escapeHtmlText(formatRelativeTimeAgo(lastRead))}</p>`;
+      }
+      if (statusHtml.trim()) {
+        statusHtml = `<div class="flex flex-row gap-2 text-sm text-gray-500">${statusHtml}</div>`;
+      }
+      const isPrevDisabled = currentCardIndex <= 0;
+      const isNextDisabled = currentCardIndex >= readerCards.length - 1;
       return `
         <div class="post-card-completion">
           ${statusHtml}
-          <button type="button"
-            class="post-card-completion-btn${completedToday ? ' is-unmark' : ''}"
-            data-completion-action="${action}"
-            data-section-id="${escapeHtmlAttr(activeCard.sectionId)}">${escapeHtmlText(buttonLabel)}</button>
+          <div class="post-card-completion-actions">
+            <button type="button" class="reader-nav-btn" data-reader-nav="prev" aria-label="Previous card" ${isPrevDisabled ? 'disabled' : ''}>&larr;</button>
+            <button type="button"
+              class="post-card-completion-btn${completedToday ? ' is-unmark' : ''}"
+              data-completion-action="${action}"
+              data-section-id="${escapeHtmlAttr(activeCard.sectionId)}">${escapeHtmlText(buttonLabel)}</button>
+            <button type="button" class="reader-nav-btn" data-reader-nav="next" aria-label="Next card" ${isNextDisabled ? 'disabled' : ''}>&rarr;</button>
+          </div>
         </div>`;
     }
 
@@ -1698,22 +1630,27 @@
         return '';
       }
 
-      const links = sectionItems.map(({ card, index }) => {
+      const links = sectionItems.map(({ card, index }, sectionNumber) => {
         const isCurrent = index === currentCardIndex;
+        const currentClasses = isCurrent
+          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500/20 dark:border-blue-400 dark:bg-blue-950/40 dark:ring-blue-400/20'
+          : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800';
         return `
           <button type="button"
-            class="reader-section-index-link${isCurrent ? ' is-current' : ''}"
+            class="flex h-full min-w-0 items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${currentClasses}"
             data-reader-card-index="${index}"
             ${isCurrent ? 'aria-current="page"' : ''}>
-            <span class="reader-section-index-label">${escapeHtmlText(card.title)}</span>
+            <span class="w-6 shrink-0 text-center text-xs font-medium tabular-nums ${isCurrent ? 'text-blue-600 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500'}">${sectionNumber + 1}</span>
+            <span class="min-w-0 flex-1 text-sm font-medium ${isCurrent ? 'text-blue-900 dark:text-blue-100' : 'text-gray-800 dark:text-gray-100'}">${escapeHtmlText(card.title)}</span>
+            ${renderSectionCompletionCheck(card.sectionId)}
           </button>`;
       }).join('');
 
       return `
-        <section class="reader-section-index no-print">
-          <h2>Sections</h2>
-          <p>Jump to any section.</p>
-          <div class="reader-section-index-list">${links}</div>
+        <section class="@container mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
+          <h2 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">Sections</h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Jump to any section.</p>
+          <div class="mt-3 grid grid-cols-1 gap-1.5 @sm:grid-cols-2 @xl:grid-cols-3">${links}</div>
         </section>`;
     }
 
@@ -1731,18 +1668,23 @@
         const href = toViewerHref(buildSuggestionPath(fileName));
         const label = fileName.replace(/\.md$/i, '').replace(/-/g, ' ').trim();
         const isCurrent = fileName === currentFileName;
+        const currentClasses = isCurrent
+          ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500/20 dark:border-blue-400 dark:bg-blue-950/40 dark:ring-blue-400/20'
+          : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800';
         return `
-          <a class="reader-suggestion-link${isCurrent ? ' is-current' : ''}" href="${escapeHtmlAttr(href)}"${isCurrent ? ' aria-current="page"' : ''}>
-            <span>${index + 1}</span>
-            <span class="reader-suggestion-name">${escapeHtmlText(label)}</span>
+          <a class="flex h-full min-w-0 items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${currentClasses}"
+            href="${escapeHtmlAttr(href)}"
+            ${isCurrent ? 'aria-current="page"' : ''}>
+            <span class="w-6 shrink-0 text-center text-xs font-medium tabular-nums ${isCurrent ? 'text-blue-600 dark:text-blue-300' : 'text-gray-400 dark:text-gray-500'}">${index + 1}</span>
+            <span class="min-w-0 flex-1 text-sm font-medium ${isCurrent ? 'text-blue-900 dark:text-blue-100' : 'text-gray-800 dark:text-gray-100'}">${escapeHtmlText(label)}</span>
           </a>`;
       }).join('');
 
       return `
-        <section class="reader-suggestions" aria-labelledby="reader-suggestions-title">
-          <h2 id="reader-suggestions-title" class="reader-suggestions-title">Suggested next reads</h2>
-          <p class="reader-suggestions-copy">Markdown files in this folder you can open next.</p>
-          <div class="reader-suggestions-list">${suggestionCards}</div>
+        <section class="@container mt-8 border-t border-gray-200 pt-6 dark:border-gray-700" aria-labelledby="reader-suggestions-title">
+          <h2 id="reader-suggestions-title" class="text-sm font-semibold tracking-wide text-gray-900 dark:text-gray-100">Suggested next reads</h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Continue spiriting your way through the posts in this folder.</p>
+          <div class="mt-3 grid grid-cols-1 gap-1.5 @sm:grid-cols-2 @xl:grid-cols-3">${suggestionCards}</div>
         </section>`;
     }
 
@@ -1896,9 +1838,9 @@
         <div class="posts-reader">
           ${heroHtml}
           <div class="reader-nav">
-            <div class="reader-progress">
+            <div>
               <div class="reader-progress-row">
-                <span>${escapeHtmlText(updateReaderProgressText(currentCardIndex, totalCards))}</span>
+                <span class="text-sm text-gray-500">${escapeHtmlText(updateReaderProgressText(currentCardIndex, totalCards))}</span>
                 ${remainingTimesHtml}
               </div>
             </div>
@@ -1910,22 +1852,31 @@
           <div class="reader-stage" data-reader-stage>
             <article class="post-card${activeCard.kind === 'intro' ? ' preamble-card' : ''}" data-reader-card>
               <div class="post-card-header">
-                <div class="post-card-meta">
+                <div class="flex gap-2">
                   <span class="post-card-badge">${escapeHtmlText(activeCard.label)}</span>
-                  <span class="post-card-hint">${activeCard.kind === 'intro' ? 'Read this first' : 'Swipe left or right to continue'}</span>
-                  ${cardTimesHtml ? `<div class="post-card-times">${cardTimesHtml}</div>` : ''}
+                  <i class="ms-auto"></i>
+                  ${cardTimesHtml ? `${cardTimesHtml}` : ''}
+                  <span class="text-xs text-gray-500">${activeCard.kind === 'intro' ? 'Read this first' : 'Swipe left or right to continue'}</span>
                 </div>
               </div>
               <div class="post-card-body markdown-body">${renderMarkdownToHtml(activeCard.markdown, currentReaderFilePath)}</div>
               ${renderCompletionFooter(activeCard)}
             </article>
           </div>
-          ${renderSectionIndex()}
-          ${renderSuggestionsSection()}
         </div>`;
-
+      setSectionIndexHtml(renderSectionIndex());
+      setSuggestionsHtml(renderSuggestionsSection());
       setReaderMode(true);
       applyContentEnhancements(fileContentElement, { buildToc: false });
+      if (window.ViewerDwellEncouragement) {
+        const sectionId = activeCard.kind === 'section' && activeCard.sectionId != null
+          ? String(activeCard.sectionId)
+          : 'intro';
+        window.ViewerDwellEncouragement.setContext({
+          path: currentReaderFilePath || activeCard.filePath || '',
+          sectionId,
+        });
+      }
     }
 
     function showReaderCard(index) {
@@ -2083,6 +2034,9 @@
         return;
       }
       setReaderMode(false);
+      if (window.ViewerDwellEncouragement) window.ViewerDwellEncouragement.stop();
+      setSectionIndexHtml('');
+      setSuggestionsHtml('');
 
       // Extension -> highlight.js language for raw source files (no Markdown)
       const codeExtensions = {

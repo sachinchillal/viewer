@@ -194,7 +194,7 @@
       const escapedDirectory = escapeHtmlAttr(directory);
       return `<li class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline py-1 text-inherit${activeClass}" data-directory="${escapedDirectory}">${escapeHtmlText(displayName)}</li>`;
     }).join('');
-    directoriesList.innerHTML = `<ol class="explorer-list">${items}</ol>`;
+    directoriesList.innerHTML = `<ol class="explorer-list marker:text-gray-400">${items}</ol>`;
   }
 
   function renderTreeNodes(nodes, prefix, activePath) {

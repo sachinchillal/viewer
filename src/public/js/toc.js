@@ -5,6 +5,7 @@
     'panel-drawer panel-drawer-left toc-sidebar no-print hidden fixed inset-y-0 left-0 z-50 w-[min(85vw,18rem)] p-4 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-lg lg:static lg:inset-auto lg:z-auto lg:w-48 lg:shrink-0 lg:p-0 lg:shadow-none lg:border-0';
 
   let closeMobilePanels = () => { };
+  let onHashChange = () => { };
 
   function slugify(text) {
     return String(text || '')
@@ -40,6 +41,10 @@
     mount.replaceWith(aside);
   }
 
+  function headingLevel(h) {
+    return parseInt(h.tagName.charAt(1), 10) - 1;
+  }
+
   function build(contentEl) {
     const tocSidebar = document.getElementById('toc-sidebar');
     if (!tocSidebar) return;
@@ -53,18 +58,37 @@
 
     assignHeadingIds(contentEl);
 
+    let minLevel = 5;
+    headings.forEach((h) => {
+      const level = headingLevel(h);
+      if (level < minLevel) minLevel = level;
+    });
+
+    const counters = [0, 0, 0, 0, 0, 0];
     const nav = document.createElement('nav');
     nav.setAttribute('aria-label', 'Table of contents');
     headings.forEach((h) => {
       const id = h.id;
+      const level = headingLevel(h);
+      counters[level]++;
+      for (let i = level + 1; i < 6; i++) counters[i] = 0;
+      const number = counters.slice(minLevel, level + 1).join('.');
+
       const a = document.createElement('a');
       a.href = '#' + id;
-      a.textContent = h.textContent;
+      const num = document.createElement('span');
+      num.className = 'toc-num';
+      num.textContent = number + ' ';
+      const label = document.createElement('span');
+      label.textContent = h.textContent;
+      a.appendChild(num);
+      a.appendChild(label);
       a.classList.add('toc-' + h.tagName.toLowerCase(), 'hover:text-blue-600', 'dark:hover:text-blue-400');
       a.addEventListener('click', (e) => {
         e.preventDefault();
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
+        onHashChange(id);
         closeMobilePanels();
       });
       nav.appendChild(a);
@@ -83,6 +107,9 @@
   function init(options) {
     closeMobilePanels = typeof options?.closeMobilePanels === 'function'
       ? options.closeMobilePanels
+      : () => { };
+    onHashChange = typeof options?.onHashChange === 'function'
+      ? options.onHashChange
       : () => { };
     injectMarkup();
   }

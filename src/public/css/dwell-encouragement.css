@@ -1,0 +1,35 @@
+.dwell-encouragement-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 5.5rem;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: min(24rem, calc(100vw - 2rem));
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+}
+
+html.dark .dwell-encouragement-toast {
+  border-color: #374151;
+  background: #111827;
+  color: #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+}
+
+.dwell-encouragement-toast.hidden {
+  display: none;
+}
+
+@media print {
+  .dwell-encouragement-toast {
+    display: none !important;
+  }
+}

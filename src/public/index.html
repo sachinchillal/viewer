@@ -325,9 +325,6 @@
       .replace(/\/+$/, '');
     const API_BASE_URL = `${APP_BASE_PATH}/api`;
     const POSTS_PAGE_URL = `${APP_BASE_PATH}/posts/`;
-    document.querySelectorAll('.posts-page-link').forEach((link) => {
-      link.setAttribute('href', POSTS_PAGE_URL);
-    });
     const TAGS_TO_TOGGLE = [
       {
         tag: 'blockquote',
@@ -349,7 +346,11 @@
     }
     if (window.ViewerToc) {
       window.ViewerToc.init({
-        closeMobilePanels: () => closeMobilePanels()
+        closeMobilePanels: () => closeMobilePanels(),
+        onHashChange: (id) => syncPostsPageLinks(
+          new URLSearchParams(window.location.search).get('path') || '',
+          id
+        )
       });
     }
     if (window.ViewerSettings) {
@@ -368,6 +369,8 @@
     function init() {
       const urlParams = new URLSearchParams(window.location.search);
       const pathFromUrl = urlParams.get('path') || '';
+      const hashFromUrl = (window.location.hash || '').replace(/^#/, '');
+      syncPostsPageLinks(pathFromUrl, hashFromUrl);
       if (window.ViewerExplorer) {
         window.ViewerExplorer.setCurrentRoot(pathFromUrl);
         window.ViewerExplorer.load(pathFromUrl);
@@ -381,6 +384,8 @@
       window.addEventListener('popstate', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const pathFromUrl = urlParams.get('path') || '';
+        const hashFromUrl = (window.location.hash || '').replace(/^#/, '');
+        syncPostsPageLinks(pathFromUrl, hashFromUrl);
         if (window.ViewerExplorer) {
           window.ViewerExplorer.setCurrentRoot(pathFromUrl);
           window.ViewerExplorer.load(pathFromUrl);
@@ -412,6 +417,7 @@
         const id = decodeURIComponent(href.slice(1));
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
+        syncPostsPageLinks(new URLSearchParams(window.location.search).get('path') || '', id);
         return;
       }
 
@@ -563,6 +569,24 @@
       return String(path || '').replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
     }
 
+    function buildPathHref(baseUrl, path, hash) {
+      let href = baseUrl;
+      if (path) {
+        href += '?path=' + encodeViewerPath(path);
+      }
+      if (hash) {
+        href += '#' + String(hash).replace(/^#/, '');
+      }
+      return href;
+    }
+
+    function syncPostsPageLinks(path, hash) {
+      const href = buildPathHref(POSTS_PAGE_URL, path, hash);
+      document.querySelectorAll('.posts-page-link').forEach((link) => {
+        link.setAttribute('href', href);
+      });
+    }
+
     function updateUrl(path, hash) {
       let newUrl = window.location.origin + window.location.pathname;
       if (path) {
@@ -572,6 +596,7 @@
         newUrl += '#' + String(hash).replace(/^#/, '');
       }
       window.history.pushState({ path, hash: hash || '' }, '', newUrl);
+      syncPostsPageLinks(path, hash);
     }
 
     function updateReadingTime(source) {

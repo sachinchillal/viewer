@@ -2,7 +2,7 @@
   margin-top: 1rem;
 }
 
-.file-reading-time:not(.hidden):not([hidden]) + #file-content {
+.file-reading-time:not(.hidden):not([hidden])+#file-content {
   margin-top: 0.75rem;
 }
 
@@ -47,19 +47,8 @@
   width: 100%;
 }
 
-.reader-progress-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-}
-
-.reader-nav .reader-progress {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
 @media print {
+
   .file-reading-time,
   .reading-time {
     display: none !important;

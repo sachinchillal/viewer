@@ -9,6 +9,8 @@
   const DENSITY_NORMAL = 'normal';
   const DENSITY_COMPACT = 'compact';
   const TWO_COLUMN_PRINT_KEY = 'viewer-two-column-print';
+  const TOC_NUMBERS_KEY = 'viewer-toc-numbers';
+  const DWELL_ENCOURAGEMENT_KEY = 'viewer-dwell-encouragement';
   const VOICE_STORAGE_KEY = 'viewer-voice';
   const SPEECH_RATE_KEY = 'viewer-speech-rate';
   const SPEECH_RATE_MIN = 0.5;
@@ -60,6 +62,18 @@
         <input type="checkbox" id="is-two-column-print"
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
         <span>Is Two Column Print</span>
+      </label>
+      <label for="is-toc-numbers"
+        class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
+        <input type="checkbox" id="is-toc-numbers"
+          class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+        <span>Show TOC numbers</span>
+      </label>
+      <label for="is-dwell-encouragement"
+        class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
+        <input type="checkbox" id="is-dwell-encouragement"
+          class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+        <span>Dwell encouragement</span>
       </label>
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">
@@ -204,6 +218,39 @@
     });
   }
 
+  function updateTocNumbersClass(enabled) {
+    document.body.classList.toggle('toc-hide-numbers', !enabled);
+  }
+
+  function initTocNumbers() {
+    const checkbox = document.getElementById('is-toc-numbers');
+    if (!checkbox) return;
+    const enabled = localStorage.getItem(TOC_NUMBERS_KEY) !== 'false';
+    checkbox.checked = enabled;
+    updateTocNumbersClass(enabled);
+
+    checkbox.addEventListener('change', () => {
+      const isChecked = checkbox.checked;
+      localStorage.setItem(TOC_NUMBERS_KEY, String(isChecked));
+      updateTocNumbersClass(isChecked);
+    });
+  }
+
+  function initDwellEncouragement() {
+    const checkbox = document.getElementById('is-dwell-encouragement');
+    if (!checkbox) return;
+    const enabled = localStorage.getItem(DWELL_ENCOURAGEMENT_KEY) !== 'false';
+    checkbox.checked = enabled;
+
+    checkbox.addEventListener('change', () => {
+      const isChecked = checkbox.checked;
+      localStorage.setItem(DWELL_ENCOURAGEMENT_KEY, String(isChecked));
+      if (global.ViewerDwellEncouragement && typeof global.ViewerDwellEncouragement.setEnabled === 'function') {
+        global.ViewerDwellEncouragement.setEnabled(isChecked);
+      }
+    });
+  }
+
   function escapeHtmlAttr(s) {
     return String(s)
       .replace(/&/g, '&amp;')
@@ -338,6 +385,8 @@
     initTheme();
     initDensity();
     initTwoColumnPrint();
+    initTocNumbers();
+    initDwellEncouragement();
     initVoiceSettings();
     initSettingsPanel(options || {});
   }

@@ -38,3 +38,15 @@
 .toc-sidebar .toc-h6 {
   margin-left: 3rem;
 }
+
+.toc-sidebar .toc-num {
+  color: #9ca3af; /* gray-400 */
+}
+
+html.dark .toc-sidebar .toc-num {
+  color: #6b7280; /* gray-500 */
+}
+
+body.toc-hide-numbers .toc-sidebar .toc-num {
+  display: none;
+}
