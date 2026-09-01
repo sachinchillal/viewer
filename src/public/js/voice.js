@@ -8,7 +8,10 @@
   const SPEECH_RATE_MAX = 2;
   const CODEBLOCK_ALTERNATIVE_TEXT = 'See the code block for more details.';
   const SPEECH_GAP_AFTER_HEADING_MS = 300;
-  const SPEECH_GAP_AFTER_BLOCK_MS = 40;
+  const SPEECH_GAP_BLOCK_KEY = 'viewer-speech-gap-block-ms';
+  const SPEECH_GAP_BLOCK_MIN = 0;
+  const SPEECH_GAP_BLOCK_MAX = 2000;
+  const SPEECH_GAP_BLOCK_DEFAULT = 40;
 
   const SECTION_PLAY_SVG =
     '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>';
@@ -30,6 +33,12 @@
     const x = Number(n);
     if (!Number.isFinite(x)) return 1;
     return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
+  }
+
+  function clampSpeechGap(n) {
+    const x = Number(n);
+    if (!Number.isFinite(x)) return SPEECH_GAP_BLOCK_DEFAULT;
+    return Math.min(SPEECH_GAP_BLOCK_MAX, Math.max(SPEECH_GAP_BLOCK_MIN, Math.round(x)));
   }
 
   function injectMarkup() {
@@ -303,7 +312,9 @@
       u.rate = clampSpeechRate(parseFloat(localStorage.getItem(SPEECH_RATE_KEY)));
       u.onend = () => {
         if (session !== speakSession) return;
-        const gap = chunk.kind === 'heading' ? SPEECH_GAP_AFTER_HEADING_MS : SPEECH_GAP_AFTER_BLOCK_MS;
+        const gap = chunk.kind === 'heading'
+          ? SPEECH_GAP_AFTER_HEADING_MS
+          : clampSpeechGap(parseInt(localStorage.getItem(SPEECH_GAP_BLOCK_KEY), 10));
         if (gap > 0) {
           setTimeout(speakNext, gap);
         } else {

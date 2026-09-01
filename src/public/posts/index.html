@@ -60,6 +60,7 @@
   <link rel="stylesheet" href="css/loader.css">
   <link rel="stylesheet" href="css/reading-time.css">
   <link rel="stylesheet" href="css/dwell-encouragement.css">
+  <link rel="stylesheet" href="css/lightbox.css">
   <style>
     html {
       scroll-behavior: smooth;
@@ -469,10 +470,6 @@
       background: rgba(69, 10, 10, 0.32);
     }
 
-    body.reader-mode #toc-sidebar {
-      display: none !important;
-    }
-
     body.reader-mode #file-content.markdown-body {
       max-width: 100%;
       padding-top: 1rem;
@@ -818,6 +815,7 @@
   <script src="js/toc.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/dwell-encouragement.js"></script>
+  <script src="js/lightbox.js"></script>
   <script>
     const APP_BASE_PATH = window.location.pathname
       .replace(/\/index\.html$/, '')
@@ -880,6 +878,9 @@
     }
     if (window.ViewerVoice) {
       window.ViewerVoice.init({ contentRootSelector: '#file-content' });
+    }
+    if (window.ViewerLightbox) {
+      window.ViewerLightbox.init({ contentRootSelector: '#file-content' });
     }
     if (window.ViewerDwellEncouragement) {
       window.ViewerDwellEncouragement.init();
@@ -1010,11 +1011,23 @@
         readerTouchStart = null;
         return;
       }
+      if (window.ViewerLightbox && window.ViewerLightbox.isOpen()) {
+        readerTouchStart = null;
+        return;
+      }
+      if (e.target.closest && e.target.closest('img')) {
+        readerTouchStart = null;
+        return;
+      }
       const touch = e.touches[0];
       readerTouchStart = { x: touch.clientX, y: touch.clientY };
     }
 
     function handleReaderTouchEnd(e) {
+      if (window.ViewerLightbox && window.ViewerLightbox.isOpen()) {
+        readerTouchStart = null;
+        return;
+      }
       if (!readerTouchStart || !readerCards.length || e.changedTouches.length !== 1) {
         readerTouchStart = null;
         return;
@@ -1289,7 +1302,7 @@
         }
         const src = toAssetUrl(href, filePath);
         const titleAttr = imgTitle ? ` title="${escapeHtmlAttr(imgTitle)}"` : '';
-        return `<img src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(alt || '')}"${titleAttr}>`;
+        return `<img class="viewer-zoomable" src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(alt || '')}"${titleAttr}>`;
       };
       renderer.link = function (hrefOrToken, title, text) {
         let href;
@@ -1326,9 +1339,23 @@
     function setReaderMode(enabled) {
       document.body.classList.toggle('reader-mode', Boolean(enabled));
       if (enabled) {
-        if (window.ViewerToc) window.ViewerToc.build(null);
         closeMobilePanels();
       }
+    }
+
+    function renderReaderToc() {
+      if (!window.ViewerToc) return;
+      if (!readerCards.length) {
+        window.ViewerToc.build(null);
+        return;
+      }
+      window.ViewerToc.buildItems(readerCards.map((card, index) => ({
+        id: card.kind === 'intro' ? 'intro' : `section-${card.sectionId ?? index}`,
+        text: card.title,
+        level: 2,
+        active: index === currentCardIndex,
+        onSelect: () => showReaderCard(index),
+      })));
     }
 
     function updateReadingTime(source) {
@@ -1487,13 +1514,22 @@
       }
       const completedToday = isSectionCompletedToday(sectionId);
       const completedRecently = !completedToday && isSectionCompletedWithinHours(sectionId, 24);
-      if (!completedToday && !completedRecently) {
+      const completedEver = getSectionTimestamps(sectionId).length > 0;
+      if (!completedEver) {
         return '';
       }
-      const label = completedToday ? 'Completed today' : 'Completed in the last 24 hours';
-      const colorClass = completedToday
-        ? 'text-emerald-600 dark:text-emerald-400'
-        : 'text-gray-400 dark:text-gray-500';
+      let label;
+      let colorClass;
+      if (completedToday) {
+        label = 'Completed today';
+        colorClass = 'text-emerald-600 dark:text-emerald-400';
+      } else if (completedRecently) {
+        label = 'Completed in the last 24 hours';
+        colorClass = 'text-blue-600 dark:text-blue-400';
+      } else {
+        label = 'Completed at least once';
+        colorClass = 'text-gray-400 dark:text-gray-500';
+      }
       return `
         <svg class="h-4 w-4 shrink-0 ${colorClass}" viewBox="0 0 20 20" fill="currentColor" role="img" aria-label="${escapeHtmlAttr(label)}">
           <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
@@ -1868,6 +1904,7 @@
       setSuggestionsHtml(renderSuggestionsSection());
       setReaderMode(true);
       applyContentEnhancements(fileContentElement, { buildToc: false });
+      renderReaderToc();
       if (window.ViewerDwellEncouragement) {
         const sectionId = activeCard.kind === 'section' && activeCard.sectionId != null
           ? String(activeCard.sectionId)

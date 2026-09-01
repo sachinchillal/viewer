@@ -2,6 +2,7 @@
   'use strict';
 
   const ENABLED_KEY = 'viewer-dwell-encouragement';
+  const AUTO_CLOSE_KEY = 'viewer-autoclose-toasts';
   const LOG_KEY = 'viewer-dwell-log';
   const WINDOW_MS = 24 * 60 * 60 * 1000;
   const TICK_MS = 15000;
@@ -11,8 +12,8 @@
   let context = null;
   let segmentStart = null;
   let tickTimer = null;
-  let toastHideTimer = null;
   let listenersBound = false;
+  const toastTimers = new Map();
 
   function isEnabled() {
     return localStorage.getItem(ENABLED_KEY) !== 'false';
@@ -20,6 +21,14 @@
 
   function setEnabledFlag(enabled) {
     localStorage.setItem(ENABLED_KEY, enabled ? 'true' : 'false');
+  }
+
+  function isAutoClose() {
+    return localStorage.getItem(AUTO_CLOSE_KEY) === 'true';
+  }
+
+  function setAutoCloseFlag(enabled) {
+    localStorage.setItem(AUTO_CLOSE_KEY, enabled ? 'true' : 'false');
   }
 
   function contextKey(path, sectionId) {
@@ -104,30 +113,60 @@
     return document.visibilityState !== 'hidden';
   }
 
-  function ensureToastEl() {
-    let el = document.getElementById('dwell-encouragement-toast');
+  function ensureToastContainer() {
+    let el = document.getElementById('dwell-encouragement-toasts');
     if (el) return el;
     el = document.createElement('div');
-    el.id = 'dwell-encouragement-toast';
-    el.className = 'dwell-encouragement-toast no-print hidden';
-    el.setAttribute('role', 'status');
+    el.id = 'dwell-encouragement-toasts';
+    el.className = 'dwell-encouragement-toasts no-print';
     el.setAttribute('aria-live', 'polite');
-    el.setAttribute('aria-atomic', 'true');
+    el.setAttribute('aria-relevant', 'additions');
     document.body.appendChild(el);
     return el;
   }
 
-  function hideToast() {
-    const el = document.getElementById('dwell-encouragement-toast');
-    if (el) {
-      el.classList.add('hidden');
-      el.textContent = '';
-    }
-    if (toastHideTimer) {
-      clearTimeout(toastHideTimer);
-      toastHideTimer = null;
+  function clearToastTimer(el) {
+    const timer = toastTimers.get(el);
+    if (timer) {
+      clearTimeout(timer);
+      toastTimers.delete(el);
     }
   }
+
+  function startToastTimer(el) {
+    if (!el || toastTimers.has(el)) return;
+    const timer = setTimeout(() => dismissToast(el), TOAST_DISMISS_MS);
+    toastTimers.set(el, timer);
+  }
+
+  function dismissToast(el) {
+    if (!el) return;
+    clearToastTimer(el);
+    if (el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
+  }
+
+  function hideAllToasts() {
+    const container = document.getElementById('dwell-encouragement-toasts');
+    if (!container) return;
+    Array.from(container.children).forEach((el) => dismissToast(el));
+  }
+
+  function setAutoClose(enabled) {
+    const on = Boolean(enabled);
+    setAutoCloseFlag(on);
+    const container = document.getElementById('dwell-encouragement-toasts');
+    if (!container) return;
+    Array.from(container.children).forEach((el) => {
+      if (on) {
+        startToastTimer(el);
+      } else {
+        clearToastTimer(el);
+      }
+    });
+  }
+
   const fastReadingMessages = {
     5: "⚡ Stay sharp and keep scrolling.",
     10: "📚 Focus on key points and keep moving.",
@@ -149,11 +188,29 @@
   }
 
   function showToast(message) {
-    const el = ensureToastEl();
-    el.textContent = message;
-    el.classList.remove('hidden');
-    if (toastHideTimer) clearTimeout(toastHideTimer);
-    toastHideTimer = setTimeout(hideToast, TOAST_DISMISS_MS);
+    const container = ensureToastContainer();
+    const el = document.createElement('div');
+    el.className = 'dwell-encouragement-toast';
+    el.setAttribute('role', 'status');
+
+    const text = document.createElement('span');
+    text.className = 'dwell-encouragement-toast-message';
+    text.textContent = message;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dwell-encouragement-toast-dismiss';
+    btn.setAttribute('aria-label', 'Dismiss');
+    btn.textContent = '\u00d7';
+    btn.addEventListener('click', () => dismissToast(el));
+
+    el.appendChild(text);
+    el.appendChild(btn);
+    container.appendChild(el);
+
+    if (isAutoClose()) {
+      startToastTimer(el);
+    }
   }
 
   function flushOpenSegment(now) {
@@ -239,7 +296,6 @@
   function stop() {
     pauseTracking();
     context = null;
-    hideToast();
   }
 
   function setContext(next) {
@@ -264,7 +320,7 @@
 
     if (!isEnabled()) {
       clearTick();
-      hideToast();
+      hideAllToasts();
       return;
     }
 
@@ -275,7 +331,7 @@
     setEnabledFlag(Boolean(enabled));
     if (!enabled) {
       pauseTracking();
-      hideToast();
+      hideAllToasts();
       return;
     }
     if (context) {
@@ -305,7 +361,7 @@
 
   function init() {
     bindListeners();
-    ensureToastEl();
+    ensureToastContainer();
     if (context && isEnabled()) {
       resumeTracking();
     }
@@ -316,7 +372,10 @@
     setContext,
     stop,
     setEnabled,
+    setAutoClose,
     isEnabled,
+    isAutoClose,
     ENABLED_KEY,
+    AUTO_CLOSE_KEY,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

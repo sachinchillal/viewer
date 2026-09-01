@@ -41,54 +41,83 @@
     mount.replaceWith(aside);
   }
 
-  function headingLevel(h) {
-    return parseInt(h.tagName.charAt(1), 10) - 1;
+  function headingsToItems(contentEl) {
+    assignHeadingIds(contentEl);
+    return Array.from(contentEl.querySelectorAll('h1, h2, h3, h4, h5, h6')).map((h) => ({
+      id: h.id,
+      text: h.textContent,
+      level: parseInt(h.tagName.charAt(1), 10),
+    }));
   }
 
-  function build(contentEl) {
+  function normalizeItems(items) {
+    if (!Array.isArray(items)) return [];
+    return items.map((item) => {
+      const level = Math.min(6, Math.max(1, parseInt(item && item.level, 10) || 2));
+      const text = String((item && item.text) || '');
+      return {
+        id: String((item && item.id) || slugify(text)),
+        text,
+        level,
+        active: Boolean(item && item.active),
+        onSelect: typeof item?.onSelect === 'function' ? item.onSelect : null,
+      };
+    });
+  }
+
+  function hideSidebar(tocSidebar) {
+    tocSidebar.innerHTML = '';
+    tocSidebar.classList.add('hidden');
+  }
+
+  function buildItems(rawItems) {
     const tocSidebar = document.getElementById('toc-sidebar');
     if (!tocSidebar) return;
 
-    const headings = contentEl ? contentEl.querySelectorAll('h1, h2, h3, h4, h5, h6') : [];
-    if (headings.length === 0) {
-      tocSidebar.innerHTML = '';
-      tocSidebar.classList.add('hidden');
+    const items = normalizeItems(rawItems);
+    if (items.length === 0) {
+      hideSidebar(tocSidebar);
       return;
     }
 
-    assignHeadingIds(contentEl);
-
-    let minLevel = 5;
-    headings.forEach((h) => {
-      const level = headingLevel(h);
-      if (level < minLevel) minLevel = level;
+    let minLevel = 6;
+    items.forEach((item) => {
+      if (item.level < minLevel) minLevel = item.level;
     });
 
     const counters = [0, 0, 0, 0, 0, 0];
     const nav = document.createElement('nav');
     nav.setAttribute('aria-label', 'Table of contents');
-    headings.forEach((h) => {
-      const id = h.id;
-      const level = headingLevel(h);
-      counters[level]++;
-      for (let i = level + 1; i < 6; i++) counters[i] = 0;
-      const number = counters.slice(minLevel, level + 1).join('.');
+    items.forEach((item) => {
+      const index = item.level - 1;
+      counters[index]++;
+      for (let i = index + 1; i < 6; i++) counters[i] = 0;
+      const number = counters.slice(minLevel - 1, index + 1).join('.');
 
       const a = document.createElement('a');
-      a.href = '#' + id;
+      a.href = '#' + item.id;
       const num = document.createElement('span');
       num.className = 'toc-num';
       num.textContent = number + ' ';
       const label = document.createElement('span');
-      label.textContent = h.textContent;
+      label.textContent = item.text;
       a.appendChild(num);
       a.appendChild(label);
-      a.classList.add('toc-' + h.tagName.toLowerCase(), 'hover:text-blue-600', 'dark:hover:text-blue-400');
+      a.classList.add('toc-h' + item.level, 'hover:text-blue-600', 'dark:hover:text-blue-400');
+      if (item.active) {
+        a.classList.add('is-active');
+        a.setAttribute('aria-current', 'true');
+      }
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + id);
-        onHashChange(id);
+        if (item.onSelect) {
+          item.onSelect(item);
+          closeMobilePanels();
+          return;
+        }
+        document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+        history.replaceState(null, '', window.location.pathname + window.location.search + '#' + item.id);
+        onHashChange(item.id);
         closeMobilePanels();
       });
       nav.appendChild(a);
@@ -104,6 +133,14 @@
     tocSidebar.classList.remove('hidden');
   }
 
+  function build(contentEl) {
+    if (!contentEl) {
+      buildItems([]);
+      return;
+    }
+    buildItems(headingsToItems(contentEl));
+  }
+
   function init(options) {
     closeMobilePanels = typeof options?.closeMobilePanels === 'function'
       ? options.closeMobilePanels
@@ -117,5 +154,6 @@
   global.ViewerToc = {
     init,
     build,
+    buildItems,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

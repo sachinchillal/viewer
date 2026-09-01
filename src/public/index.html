@@ -58,6 +58,7 @@
   <link rel="stylesheet" href="css/voice.css">
   <link rel="stylesheet" href="css/loader.css">
   <link rel="stylesheet" href="css/reading-time.css">
+  <link rel="stylesheet" href="css/lightbox.css">
   <style>
     html {
       scroll-behavior: smooth;
@@ -319,6 +320,7 @@
   <script src="js/toc.js"></script>
   <script src="js/explorer.js"></script>
   <script src="js/voice.js"></script>
+  <script src="js/lightbox.js"></script>
   <script>
     const APP_BASE_PATH = window.location.pathname
       .replace(/\/index\.html$/, '')
@@ -360,6 +362,9 @@
     }
     if (window.ViewerVoice) {
       window.ViewerVoice.init({ contentRootSelector: '#file-content' });
+    }
+    if (window.ViewerLightbox) {
+      window.ViewerLightbox.init({ contentRootSelector: '#file-content' });
     }
     init();
     initTagToggles();
@@ -751,7 +756,7 @@
           }
           const src = toAssetUrl(href, filePath);
           const titleAttr = imgTitle ? ` title="${escapeHtml(imgTitle)}"` : '';
-          return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt || '')}"${titleAttr}>`;
+          return `<img class="viewer-zoomable" src="${escapeHtml(src)}" alt="${escapeHtml(alt || '')}"${titleAttr}>`;
         };
         renderer.link = function (hrefOrToken, title, text) {
           let href;

@@ -1,0 +1,123 @@
+.markdown-body img.viewer-zoomable {
+  cursor: zoom-in;
+}
+
+.viewer-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  user-select: none;
+  touch-action: none;
+}
+
+.viewer-lightbox.hidden {
+  display: none;
+}
+
+.viewer-lightbox-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.viewer-lightbox.is-zoomed .viewer-lightbox-stage {
+  cursor: grab;
+}
+
+.viewer-lightbox.is-panning .viewer-lightbox-stage {
+  cursor: grabbing;
+}
+
+.viewer-lightbox-image {
+  max-width: calc(100vw - 5.5rem);
+  max-height: calc(100vh - 5.5rem);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transform-origin: center center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+
+.viewer-lightbox-caption {
+  margin: 0;
+  padding: 0.65rem 4.5rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #e2e8f0;
+}
+
+.viewer-lightbox-caption:empty {
+  display: none;
+}
+
+.viewer-lightbox-btn {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.viewer-lightbox-btn:hover,
+.viewer-lightbox-btn:focus-visible {
+  background: rgba(15, 23, 42, 0.85);
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.viewer-lightbox-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.viewer-lightbox-close {
+  top: 0.85rem;
+  right: 0.85rem;
+}
+
+.viewer-lightbox-prev {
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.viewer-lightbox-next {
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.viewer-lightbox-nav.hidden {
+  display: none;
+}
+
+body.viewer-lightbox-open {
+  overflow: hidden;
+}
+
+@media print {
+  .viewer-lightbox {
+    display: none !important;
+  }
+}

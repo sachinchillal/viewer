@@ -11,10 +11,16 @@
   const TWO_COLUMN_PRINT_KEY = 'viewer-two-column-print';
   const TOC_NUMBERS_KEY = 'viewer-toc-numbers';
   const DWELL_ENCOURAGEMENT_KEY = 'viewer-dwell-encouragement';
+  const AUTOCLOSE_TOASTS_KEY = 'viewer-autoclose-toasts';
   const VOICE_STORAGE_KEY = 'viewer-voice';
   const SPEECH_RATE_KEY = 'viewer-speech-rate';
   const SPEECH_RATE_MIN = 0.5;
   const SPEECH_RATE_MAX = 2;
+  const SPEECH_GAP_BLOCK_KEY = 'viewer-speech-gap-block-ms';
+  const SPEECH_GAP_BLOCK_MIN = 0;
+  const SPEECH_GAP_BLOCK_MAX = 2000;
+  const SPEECH_GAP_BLOCK_STEP = 10;
+  const SPEECH_GAP_BLOCK_DEFAULT = 40;
 
   const htmlElement = document.documentElement;
   const systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)');
@@ -75,6 +81,12 @@
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
         <span>Dwell encouragement</span>
       </label>
+      <label for="is-autoclose-toasts"
+        class="w-full flex items-center gap-1.5 cursor-pointer select-none text-gray-700 dark:text-gray-300 shrink-0">
+        <input type="checkbox" id="is-autoclose-toasts"
+          class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-800">
+        <span>Auto-close toast messages</span>
+      </label>
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between gap-2">
           <label for="voice-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Voice</label>
@@ -104,6 +116,19 @@
         <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 leading-none">
           <span>Slower</span>
           <span>Faster</span>
+        </div>
+      </div>
+      <div class="w-full flex flex-col gap-1.5">
+        <label for="speech-gap-block" class="text-sm font-medium text-gray-700 dark:text-gray-300">Pause after
+          paragraphs</label>
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-speech-gap-block-minus" aria-label="Decrease paragraph pause"
+            class="${THEME_BTN_CLASS} inline-flex items-center justify-center min-w-[2rem]">−</button>
+          <input type="number" id="speech-gap-block" min="0" max="2000" step="10" value="40"
+            class="w-full min-w-0 px-2 py-1 text-sm text-center tabular-nums rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 outline-none transition-colors">
+          <button type="button" id="btn-speech-gap-block-plus" aria-label="Increase paragraph pause"
+            class="${THEME_BTN_CLASS} inline-flex items-center justify-center min-w-[2rem]">+</button>
+          <span class="text-xs text-gray-600 dark:text-gray-400 shrink-0">ms</span>
         </div>
       </div>
     </div>
@@ -251,6 +276,21 @@
     });
   }
 
+  function initAutoCloseToasts() {
+    const checkbox = document.getElementById('is-autoclose-toasts');
+    if (!checkbox) return;
+    const enabled = localStorage.getItem(AUTOCLOSE_TOASTS_KEY) === 'true';
+    checkbox.checked = enabled;
+
+    checkbox.addEventListener('change', () => {
+      const isChecked = checkbox.checked;
+      localStorage.setItem(AUTOCLOSE_TOASTS_KEY, String(isChecked));
+      if (global.ViewerDwellEncouragement && typeof global.ViewerDwellEncouragement.setAutoClose === 'function') {
+        global.ViewerDwellEncouragement.setAutoClose(isChecked);
+      }
+    });
+  }
+
   function escapeHtmlAttr(s) {
     return String(s)
       .replace(/&/g, '&amp;')
@@ -263,6 +303,12 @@
     const x = Number(n);
     if (!Number.isFinite(x)) return 1;
     return Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, x));
+  }
+
+  function clampSpeechGap(n) {
+    const x = Number(n);
+    if (!Number.isFinite(x)) return SPEECH_GAP_BLOCK_DEFAULT;
+    return Math.min(SPEECH_GAP_BLOCK_MAX, Math.max(SPEECH_GAP_BLOCK_MIN, Math.round(x)));
   }
 
   function formatSpeechRateDisplay(v) {
@@ -336,6 +382,40 @@
         if (speechRateValueEl) speechRateValueEl.textContent = formatSpeechRateDisplay(r);
       });
     }
+
+    const speechGapInput = document.getElementById('speech-gap-block');
+    const btnSpeechGapMinus = document.getElementById('btn-speech-gap-block-minus');
+    const btnSpeechGapPlus = document.getElementById('btn-speech-gap-block-plus');
+
+    function applySpeechGap(n) {
+      if (!speechGapInput) return;
+      const gap = clampSpeechGap(n);
+      speechGapInput.value = String(gap);
+      localStorage.setItem(SPEECH_GAP_BLOCK_KEY, String(gap));
+    }
+
+    function syncSpeechGapUi() {
+      if (!speechGapInput) return;
+      const saved = localStorage.getItem(SPEECH_GAP_BLOCK_KEY);
+      const gap = clampSpeechGap(saved == null || saved === '' ? SPEECH_GAP_BLOCK_DEFAULT : parseInt(saved, 10));
+      speechGapInput.value = String(gap);
+    }
+
+    syncSpeechGapUi();
+    if (speechGapInput) {
+      speechGapInput.addEventListener('change', () => {
+        applySpeechGap(parseInt(speechGapInput.value, 10));
+      });
+      speechGapInput.addEventListener('blur', () => {
+        applySpeechGap(parseInt(speechGapInput.value, 10));
+      });
+    }
+    btnSpeechGapMinus?.addEventListener('click', () => {
+      applySpeechGap((parseInt(speechGapInput?.value, 10) || 0) - SPEECH_GAP_BLOCK_STEP);
+    });
+    btnSpeechGapPlus?.addEventListener('click', () => {
+      applySpeechGap((parseInt(speechGapInput?.value, 10) || 0) + SPEECH_GAP_BLOCK_STEP);
+    });
   }
 
   function initSettingsPanel(options) {
@@ -387,6 +467,7 @@
     initTwoColumnPrint();
     initTocNumbers();
     initDwellEncouragement();
+    initAutoCloseToasts();
     initVoiceSettings();
     initSettingsPanel(options || {});
   }
